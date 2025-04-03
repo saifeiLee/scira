@@ -2,8 +2,8 @@
 import { getGroupConfig } from '@/app/actions';
 import { serverEnv } from '@/env/server';
 import { xai } from '@ai-sdk/xai';
-import { cohere } from '@ai-sdk/cohere'
-import { mistral } from "@ai-sdk/mistral";
+import { cohere } from '@ai-sdk/cohere';
+import { mistral } from '@ai-sdk/mistral';
 import CodeInterpreter from '@e2b/code-interpreter';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { tavily } from '@tavily/core';
@@ -16,7 +16,7 @@ import {
     customProvider,
     generateObject,
     NoSuchToolError,
-    generateText
+    generateText,
 } from 'ai';
 import Exa from 'exa-js';
 import { z } from 'zod';
@@ -28,8 +28,8 @@ const scira = customProvider({
         'scira-vision': xai('grok-2-vision-1212'),
         'scira-cmd-a': cohere('command-a-03-2025'),
         'scira-mistral': mistral('mistral-small-latest'),
-    }
-})
+    },
+});
 
 interface XResult {
     id: string;
@@ -118,16 +118,20 @@ async function isValidImageUrl(url: string): Promise<{ valid: boolean; redirecte
             method: 'HEAD',
             signal: controller.signal,
             headers: {
-                'Accept': 'image/*',
-                'User-Agent': 'Mozilla/5.0 (compatible; ImageValidator/1.0)'
+                Accept: 'image/*',
+                'User-Agent': 'Mozilla/5.0 (compatible; ImageValidator/1.0)',
             },
-            redirect: 'follow' // Ensure redirects are followed
+            redirect: 'follow', // Ensure redirects are followed
         });
 
         clearTimeout(timeout);
 
         // Log response details for debugging
-        console.log(`Image validation [${url}]: status=${response.status}, content-type=${response.headers.get('content-type')}`);
+        console.log(
+            `Image validation [${url}]: status=${response.status}, content-type=${response.headers.get(
+                'content-type',
+            )}`,
+        );
 
         // Capture redirected URL if applicable
         const redirectedUrl = response.redirected ? response.url : undefined;
@@ -154,7 +158,7 @@ async function isValidImageUrl(url: string): Promise<{ valid: boolean; redirecte
 
                 const proxyResponse = await fetch(`/api/proxy-image?url=${encodeURIComponent(url)}`, {
                     method: 'HEAD',
-                    signal: controller.signal
+                    signal: controller.signal,
                 });
 
                 clearTimeout(proxyTimeout);
@@ -167,7 +171,7 @@ async function isValidImageUrl(url: string): Promise<{ valid: boolean; redirecte
                         console.log(`Proxy validation successful for ${url}`);
                         return {
                             valid: true,
-                            redirectedUrl: proxyRedirectedUrl || redirectedUrl
+                            redirectedUrl: proxyRedirectedUrl || redirectedUrl,
                         };
                     }
                 }
@@ -205,7 +209,7 @@ async function isValidImageUrl(url: string): Promise<{ valid: boolean; redirecte
 
                 const proxyResponse = await fetch(`/api/proxy-image?url=${encodeURIComponent(url)}`, {
                     method: 'HEAD',
-                    signal: controller.signal
+                    signal: controller.signal,
                 });
 
                 clearTimeout(proxyTimeout);
@@ -230,7 +234,6 @@ async function isValidImageUrl(url: string): Promise<{ valid: boolean; redirecte
     }
 }
 
-
 const extractDomain = (url: string): string => {
     const urlPattern = /^https?:\/\/([^/?#]+)(?:[/?#]|$)/i;
     return url.match(urlPattern)?.[1] || url;
@@ -240,7 +243,7 @@ const deduplicateByDomainAndUrl = <T extends { url: string }>(items: T[]): T[] =
     const seenDomains = new Set<string>();
     const seenUrls = new Set<string>();
 
-    return items.filter(item => {
+    return items.filter((item) => {
         const domain = extractDomain(item.url);
         const isNewUrl = !seenUrls.has(item.url);
         const isNewDomain = !seenDomains.has(domain);
@@ -259,12 +262,12 @@ export async function POST(req: Request) {
     const { messages, model, group, user_id, timezone } = await req.json();
     const { tools: activeTools, systemPrompt, toolInstructions, responseGuidelines } = await getGroupConfig(group);
 
-    console.log("Running with model: ", model.trim());
-    console.log("Group: ", group);
-    console.log("Timezone: ", timezone);
+    console.log('Running with model: ', model.trim());
+    console.log('Group: ', group);
+    console.log('Timezone: ', timezone);
 
     if (group !== 'chat' && group !== 'buddy') {
-        console.log("Running inside part 1");
+        console.log('Running inside part 1');
         return createDataStreamResponse({
             execute: async (dataStream) => {
                 const toolsResult = streamText({
@@ -277,21 +280,39 @@ export async function POST(req: Request) {
                     providerOptions: {
                         mistral: {
                             parallel_tool_calls: false,
-                        }
+                        },
                     },
                     tools: {
                         stock_chart: tool({
                             description: 'Write and execute Python code to find stock data and generate a stock chart.',
                             parameters: z.object({
                                 title: z.string().describe('The title of the chart.'),
-                                code: z.string().describe('The Python code with matplotlib line chart and yfinance to execute.'),
+                                code: z
+                                    .string()
+                                    .describe('The Python code with matplotlib line chart and yfinance to execute.'),
                                 icon: z
                                     .enum(['stock', 'date', 'calculation', 'default'])
                                     .describe('The icon to display for the chart.'),
-                                stock_symbols: z.array(z.string()).describe('The stock symbols to display for the chart.'),
-                                interval: z.enum(['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max']).describe('The interval of the chart. default is 1y.'),
+                                stock_symbols: z
+                                    .array(z.string())
+                                    .describe('The stock symbols to display for the chart.'),
+                                interval: z
+                                    .enum(['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max'])
+                                    .describe('The interval of the chart. default is 1y.'),
                             }),
-                            execute: async ({ code, title, icon, stock_symbols, interval }: { code: string; title: string; icon: string; stock_symbols: string[]; interval: string }) => {
+                            execute: async ({
+                                code,
+                                title,
+                                icon,
+                                stock_symbols,
+                                interval,
+                            }: {
+                                code: string;
+                                title: string;
+                                icon: string;
+                                stock_symbols: string[];
+                                interval: string;
+                            }) => {
                                 console.log('Code:', code);
                                 console.log('Title:', title);
                                 console.log('Icon:', icon);
@@ -317,7 +338,7 @@ export async function POST(req: Request) {
                                     }
                                     if (execution.logs.stderr.length > 0) {
                                         message += `${execution.logs.stderr.join('\n')}\n`;
-                                        console.log("Error: ", execution.logs.stderr);
+                                        console.log('Error: ', execution.logs.stderr);
                                     }
                                 }
 
@@ -326,7 +347,7 @@ export async function POST(req: Request) {
                                     console.log('Error: ', execution.error);
                                 }
 
-                                console.log("Chart details: ", execution.results[0].chart)
+                                console.log('Chart details: ', execution.results[0].chart);
                                 if (execution.results[0].chart) {
                                     execution.results[0].chart.elements.map((element: any) => {
                                         console.log(element.points);
@@ -334,7 +355,7 @@ export async function POST(req: Request) {
                                 }
 
                                 if (execution.results[0].chart === null) {
-                                    console.log("No chart found");
+                                    console.log('No chart found');
                                 }
 
                                 return {
@@ -394,9 +415,9 @@ export async function POST(req: Request) {
                             },
                         }),
                         text_translate: tool({
-                            description: "Translate text from one language to another.",
+                            description: 'Translate text from one language to another.',
                             parameters: z.object({
-                                text: z.string().describe("The text to translate."),
+                                text: z.string().describe('The text to translate.'),
                                 to: z.string().describe("The language to translate to (e.g., 'fr' for French)."),
                             }),
                             execute: async ({ text, to }: { text: string; to: string }) => {
@@ -417,21 +438,44 @@ export async function POST(req: Request) {
                             },
                         }),
                         web_search: tool({
-                            description: 'Search the web for information with 5-10 queries, max results and search depth.',
+                            description:
+                                'Search the web for information with 5-10 queries, max results and search depth.',
                             parameters: z.object({
-                                queries: z.array(z.string().describe('Array of search queries to look up on the web. Default is 5 to 10 queries.')),
+                                queries: z.array(
+                                    z
+                                        .string()
+                                        .describe(
+                                            'Array of search queries to look up on the web. Default is 5 to 10 queries.',
+                                        ),
+                                ),
                                 maxResults: z.array(
-                                    z.number().describe('Array of maximum number of results to return per query. Default is 10.').default(10),
+                                    z
+                                        .number()
+                                        .describe(
+                                            'Array of maximum number of results to return per query. Default is 10.',
+                                        )
+                                        .default(10),
                                 ),
                                 topics: z.array(
-                                    z.enum(['general', 'news', 'finance']).describe('Array of topic types to search for. Default is general.').default('general'),
+                                    z
+                                        .enum(['general', 'news', 'finance'])
+                                        .describe('Array of topic types to search for. Default is general.')
+                                        .default('general'),
                                 ),
                                 searchDepth: z.array(
-                                    z.enum(['basic', 'advanced']).describe('Array of search depths to use. Default is basic. Use advanced for more detailed results.').default('basic'),
+                                    z
+                                        .enum(['basic', 'advanced'])
+                                        .describe(
+                                            'Array of search depths to use. Default is basic. Use advanced for more detailed results.',
+                                        )
+                                        .default('basic'),
                                 ),
                                 exclude_domains: z
                                     .array(z.string())
-                                    .describe('A list of domains to exclude from all search results. Default is an empty list.').default([]),
+                                    .describe(
+                                        'A list of domains to exclude from all search results. Default is an empty list.',
+                                    )
+                                    .default([]),
                             }),
                             execute: async ({
                                 queries,
@@ -478,8 +522,8 @@ export async function POST(req: Request) {
                                             total: queries.length,
                                             status: 'completed',
                                             resultsCount: data.results.length,
-                                            imagesCount: data.images.length
-                                        }
+                                            imagesCount: data.images.length,
+                                        },
                                     });
 
                                     return {
@@ -493,34 +537,44 @@ export async function POST(req: Request) {
                                         })),
                                         images: includeImageDescriptions
                                             ? await Promise.all(
-                                                deduplicateByDomainAndUrl(data.images).map(
-                                                    async ({ url, description }: { url: string; description?: string }) => {
-                                                        const sanitizedUrl = sanitizeUrl(url);
-                                                        const imageValidation = await isValidImageUrl(sanitizedUrl);
-                                                        return imageValidation.valid
-                                                            ? {
-                                                                url: imageValidation.redirectedUrl || sanitizedUrl,
-                                                                description: description ?? '',
-                                                            }
-                                                            : null;
-                                                    },
-                                                ),
-                                            ).then((results) =>
-                                                results.filter(
-                                                    (image): image is { url: string; description: string } =>
-                                                        image !== null &&
-                                                        typeof image === 'object' &&
-                                                        typeof image.description === 'string' &&
-                                                        image.description !== '',
-                                                ),
-                                            )
+                                                  deduplicateByDomainAndUrl(data.images).map(
+                                                      async ({
+                                                          url,
+                                                          description,
+                                                      }: {
+                                                          url: string;
+                                                          description?: string;
+                                                      }) => {
+                                                          const sanitizedUrl = sanitizeUrl(url);
+                                                          const imageValidation = await isValidImageUrl(sanitizedUrl);
+                                                          return imageValidation.valid
+                                                              ? {
+                                                                    url: imageValidation.redirectedUrl || sanitizedUrl,
+                                                                    description: description ?? '',
+                                                                }
+                                                              : null;
+                                                      },
+                                                  ),
+                                              ).then((results) =>
+                                                  results.filter(
+                                                      (image): image is { url: string; description: string } =>
+                                                          image !== null &&
+                                                          typeof image === 'object' &&
+                                                          typeof image.description === 'string' &&
+                                                          image.description !== '',
+                                                  ),
+                                              )
                                             : await Promise.all(
-                                                deduplicateByDomainAndUrl(data.images).map(async ({ url }: { url: string }) => {
-                                                    const sanitizedUrl = sanitizeUrl(url);
-                                                    const imageValidation = await isValidImageUrl(sanitizedUrl);
-                                                    return imageValidation.valid ? (imageValidation.redirectedUrl || sanitizedUrl) : null;
-                                                }),
-                                            ).then((results) => results.filter((url) => url !== null) as string[]),
+                                                  deduplicateByDomainAndUrl(data.images).map(
+                                                      async ({ url }: { url: string }) => {
+                                                          const sanitizedUrl = sanitizeUrl(url);
+                                                          const imageValidation = await isValidImageUrl(sanitizedUrl);
+                                                          return imageValidation.valid
+                                                              ? imageValidation.redirectedUrl || sanitizedUrl
+                                                              : null;
+                                                      },
+                                                  ),
+                                              ).then((results) => results.filter((url) => url !== null) as string[]),
                                     };
                                 });
 
@@ -534,9 +588,19 @@ export async function POST(req: Request) {
                         x_search: tool({
                             description: 'Search X (formerly Twitter) posts.',
                             parameters: z.object({
-                                query: z.string().describe('The search query, if a username is provided put in the query with @username'),
-                                startDate: z.string().optional().describe('The start date for the search in YYYY-MM-DD format'),
-                                endDate: z.string().optional().describe('The end date for the search in YYYY-MM-DD format'),
+                                query: z
+                                    .string()
+                                    .describe(
+                                        'The search query, if a username is provided put in the query with @username',
+                                    ),
+                                startDate: z
+                                    .string()
+                                    .optional()
+                                    .describe('The start date for the search in YYYY-MM-DD format'),
+                                endDate: z
+                                    .string()
+                                    .optional()
+                                    .describe('The end date for the search in YYYY-MM-DD format'),
                             }),
                             execute: async ({
                                 query,
@@ -658,7 +722,8 @@ export async function POST(req: Request) {
                                                         ? `https://image.tmdb.org/t/p/original${person.profile_path}`
                                                         : null,
                                                 })) || [],
-                                            director: credits.crew?.find((person: any) => person.job === 'Director')?.name,
+                                            director: credits.crew?.find((person: any) => person.job === 'Director')
+                                                ?.name,
                                             writer: credits.crew?.find(
                                                 (person: any) => person.job === 'Screenplay' || person.job === 'Writer',
                                             )?.name,
@@ -764,24 +829,27 @@ export async function POST(req: Request) {
                                     });
 
                                     // Process and clean results
-                                    const processedResults = result.results.reduce<typeof result.results>((acc, paper) => {
-                                        // Skip if URL already exists or if no summary available
-                                        if (acc.some((p) => p.url === paper.url) || !paper.summary) return acc;
+                                    const processedResults = result.results.reduce<typeof result.results>(
+                                        (acc, paper) => {
+                                            // Skip if URL already exists or if no summary available
+                                            if (acc.some((p) => p.url === paper.url) || !paper.summary) return acc;
 
-                                        // Clean up summary (remove "Summary:" prefix if exists)
-                                        const cleanSummary = paper.summary.replace(/^Summary:\s*/i, '');
+                                            // Clean up summary (remove "Summary:" prefix if exists)
+                                            const cleanSummary = paper.summary.replace(/^Summary:\s*/i, '');
 
-                                        // Clean up title (remove [...] suffixes)
-                                        const cleanTitle = paper.title?.replace(/\s\[.*?\]$/, '');
+                                            // Clean up title (remove [...] suffixes)
+                                            const cleanTitle = paper.title?.replace(/\s\[.*?\]$/, '');
 
-                                        acc.push({
-                                            ...paper,
-                                            title: cleanTitle || '',
-                                            summary: cleanSummary,
-                                        });
+                                            acc.push({
+                                                ...paper,
+                                                title: cleanTitle || '',
+                                                summary: cleanSummary,
+                                            });
 
-                                        return acc;
-                                    }, []);
+                                            return acc;
+                                        },
+                                        [],
+                                    );
 
                                     // Take only the first 10 unique, valid results
                                     const limitedResults = processedResults.slice(0, 10);
@@ -800,7 +868,7 @@ export async function POST(req: Request) {
                             parameters: z.object({
                                 query: z.string().describe('The search query for YouTube videos'),
                             }),
-                            execute: async ({ query, }: { query: string; }) => {
+                            execute: async ({ query }: { query: string }) => {
                                 try {
                                     const exa = new Exa(serverEnv.EXA_API_KEY as string);
 
@@ -830,35 +898,36 @@ export async function POST(req: Request) {
 
                                             try {
                                                 // Fetch detailed info from our endpoints
-                                                const [detailsResponse, captionsResponse, timestampsResponse] = await Promise.all([
-                                                    fetch(`${serverEnv.YT_ENDPOINT}/video-data`, {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'Content-Type': 'application/json',
-                                                        },
-                                                        body: JSON.stringify({
-                                                            url: result.url,
-                                                        }),
-                                                    }).then((res) => (res.ok ? res.json() : null)),
-                                                    fetch(`${serverEnv.YT_ENDPOINT}/video-captions`, {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'Content-Type': 'application/json',
-                                                        },
-                                                        body: JSON.stringify({
-                                                            url: result.url,
-                                                        }),
-                                                    }).then((res) => (res.ok ? res.text() : null)),
-                                                    fetch(`${serverEnv.YT_ENDPOINT}/video-timestamps`, {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'Content-Type': 'application/json',
-                                                        },
-                                                        body: JSON.stringify({
-                                                            url: result.url,
-                                                        }),
-                                                    }).then((res) => (res.ok ? res.json() : null)),
-                                                ]);
+                                                const [detailsResponse, captionsResponse, timestampsResponse] =
+                                                    await Promise.all([
+                                                        fetch(`${serverEnv.YT_ENDPOINT}/video-data`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                            },
+                                                            body: JSON.stringify({
+                                                                url: result.url,
+                                                            }),
+                                                        }).then((res) => (res.ok ? res.json() : null)),
+                                                        fetch(`${serverEnv.YT_ENDPOINT}/video-captions`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                            },
+                                                            body: JSON.stringify({
+                                                                url: result.url,
+                                                            }),
+                                                        }).then((res) => (res.ok ? res.text() : null)),
+                                                        fetch(`${serverEnv.YT_ENDPOINT}/video-timestamps`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                            },
+                                                            body: JSON.stringify({
+                                                                url: result.url,
+                                                            }),
+                                                        }).then((res) => (res.ok ? res.json() : null)),
+                                                    ]);
 
                                                 // Return combined data
                                                 return {
@@ -901,9 +970,11 @@ export async function POST(req: Request) {
                                     const content = await app.scrapeUrl(url);
                                     if (!content.success || !content.metadata) {
                                         return {
-                                            results: [{
-                                                error: content.error
-                                            }]
+                                            results: [
+                                                {
+                                                    error: content.error,
+                                                },
+                                            ],
                                         };
                                     }
 
@@ -911,7 +982,7 @@ export async function POST(req: Request) {
                                     const schema = z.object({
                                         title: z.string(),
                                         content: z.string(),
-                                        description: z.string()
+                                        description: z.string(),
                                     });
 
                                     let title = content.metadata.title;
@@ -921,8 +992,8 @@ export async function POST(req: Request) {
                                     // If any content is missing, use extract to get it
                                     if (!title || !description || !extractedContent) {
                                         const extractResult = await app.extract([url], {
-                                            prompt: "Extract the page title, main content, and a brief description.",
-                                            schema: schema
+                                            prompt: 'Extract the page title, main content, and a brief description.',
+                                            schema: schema,
                                         });
 
                                         if (extractResult.success && extractResult.data) {
@@ -1028,7 +1099,9 @@ export async function POST(req: Request) {
                                 'Find a place using Google Maps API for forward geocoding and Mapbox for reverse geocoding.',
                             parameters: z.object({
                                 query: z.string().describe('The search query for forward geocoding'),
-                                coordinates: z.array(z.number()).describe('Array of [latitude, longitude] for reverse geocoding'),
+                                coordinates: z
+                                    .array(z.number())
+                                    .describe('Array of [latitude, longitude] for reverse geocoding'),
                             }),
                             execute: async ({ query, coordinates }: { query: string; coordinates: number[] }) => {
                                 try {
@@ -1061,7 +1134,10 @@ export async function POST(req: Request) {
                                                 formatted_address: result.formatted_address,
                                                 geometry: {
                                                     type: 'Point',
-                                                    coordinates: [result.geometry.location.lng, result.geometry.location.lat],
+                                                    coordinates: [
+                                                        result.geometry.location.lng,
+                                                        result.geometry.location.lat,
+                                                    ],
                                                 },
                                                 feature_type: result.types[0],
                                                 address_components: result.address_components,
@@ -1106,10 +1182,20 @@ export async function POST(req: Request) {
                             description: 'Perform a text-based search for places using Mapbox API.',
                             parameters: z.object({
                                 query: z.string().describe("The search query (e.g., '123 main street')."),
-                                location: z.string().describe("The location to center the search (e.g., '42.3675294,-71.186966')."),
+                                location: z
+                                    .string()
+                                    .describe("The location to center the search (e.g., '42.3675294,-71.186966')."),
                                 radius: z.number().describe('The radius of the search area in meters (max 50000).'),
                             }),
-                            execute: async ({ query, location, radius }: { query: string; location?: string; radius?: number }) => {
+                            execute: async ({
+                                query,
+                                location,
+                                radius,
+                            }: {
+                                query: string;
+                                location?: string;
+                                radius?: number;
+                            }) => {
                                 const mapboxToken = serverEnv.MAPBOX_ACCESS_TOKEN;
 
                                 let proximity = '';
@@ -1154,15 +1240,21 @@ export async function POST(req: Request) {
                             },
                         }),
                         nearby_search: tool({
-                            description: 'Search for nearby places, such as restaurants or hotels based on the details given.',
+                            description:
+                                'Search for nearby places, such as restaurants or hotels based on the details given.',
                             parameters: z.object({
                                 location: z.string().describe('The location name given by user.'),
                                 latitude: z.number().describe('The latitude of the location.'),
                                 longitude: z.number().describe('The longitude of the location.'),
                                 type: z
                                     .string()
-                                    .describe('The type of place to search for (restaurants, hotels, attractions, geos).'),
-                                radius: z.number().default(30000).describe('The radius in meters (max 50000, default 30000).'),
+                                    .describe(
+                                        'The type of place to search for (restaurants, hotels, attractions, geos).',
+                                    ),
+                                radius: z
+                                    .number()
+                                    .default(30000)
+                                    .describe('The radius in meters (max 50000, default 30000).'),
                             }),
                             execute: async ({
                                 location,
@@ -1192,9 +1284,13 @@ export async function POST(req: Request) {
                                     const geocoding = await geocodingData.json();
 
                                     if (geocoding.results?.[0]?.geometry?.location) {
-                                        let trimmedLat = geocoding.results[0].geometry.location.lat.toString().split('.');
+                                        let trimmedLat = geocoding.results[0].geometry.location.lat
+                                            .toString()
+                                            .split('.');
                                         finalLat = parseFloat(trimmedLat[0] + '.' + trimmedLat[1].slice(0, 6));
-                                        let trimmedLng = geocoding.results[0].geometry.location.lng.toString().split('.');
+                                        let trimmedLng = geocoding.results[0].geometry.location.lng
+                                            .toString()
+                                            .split('.');
                                         finalLng = parseFloat(trimmedLng[0] + '.' + trimmedLng[1].slice(0, 6));
                                         console.log('Using geocoded coordinates:', finalLat, finalLng);
                                     } else {
@@ -1294,9 +1390,11 @@ export async function POST(req: Request) {
 
                                                 // Get timezone for the location
                                                 const tzResponse = await fetch(
-                                                    `https://maps.googleapis.com/maps/api/timezone/json?location=${details.latitude
-                                                    },${details.longitude}&timestamp=${Math.floor(Date.now() / 1000)}&key=${serverEnv.GOOGLE_MAPS_API_KEY
-                                                    }`,
+                                                    `https://maps.googleapis.com/maps/api/timezone/json?location=${
+                                                        details.latitude
+                                                    },${details.longitude}&timestamp=${Math.floor(
+                                                        Date.now() / 1000,
+                                                    )}&key=${serverEnv.GOOGLE_MAPS_API_KEY}`,
                                                 );
                                                 const tzData = await tzResponse.json();
                                                 const timezone = tzData.timeZoneId || 'UTC';
@@ -1327,7 +1425,9 @@ export async function POST(req: Request) {
                                                     for (let i = 0; i < sortedPeriods.length; i++) {
                                                         const period = sortedPeriods[i];
                                                         const openTime = parseInt(period.open.time);
-                                                        const closeTime = period.close ? parseInt(period.close.time) : 2359;
+                                                        const closeTime = period.close
+                                                            ? parseInt(period.close.time)
+                                                            : 2359;
                                                         const periodDay = period.open.day;
 
                                                         // Handle overnight hours
@@ -1377,7 +1477,9 @@ export async function POST(req: Request) {
                                                     name: place.name || 'Unnamed Place',
                                                     location: {
                                                         lat: parseFloat(details.latitude || place.latitude || finalLat),
-                                                        lng: parseFloat(details.longitude || place.longitude || finalLng),
+                                                        lng: parseFloat(
+                                                            details.longitude || place.longitude || finalLng,
+                                                        ),
                                                     },
                                                     timezone,
                                                     place_id: place.location_id,
@@ -1440,7 +1542,7 @@ export async function POST(req: Request) {
                             },
                         }),
                         datetime: tool({
-                            description: 'Get the current date and time in the user\'s timezone',
+                            description: "Get the current date and time in the user's timezone",
                             parameters: z.object({}),
                             execute: async () => {
                                 try {
@@ -1459,28 +1561,28 @@ export async function POST(req: Request) {
                                                 year: 'numeric',
                                                 month: 'long',
                                                 day: 'numeric',
-                                                timeZone: timezone
+                                                timeZone: timezone,
                                             }).format(now),
                                             time: new Intl.DateTimeFormat('en-US', {
                                                 hour: '2-digit',
                                                 minute: '2-digit',
                                                 second: '2-digit',
                                                 hour12: true,
-                                                timeZone: timezone
+                                                timeZone: timezone,
                                             }).format(now),
                                             dateShort: new Intl.DateTimeFormat('en-US', {
                                                 month: 'short',
                                                 day: 'numeric',
                                                 year: 'numeric',
-                                                timeZone: timezone
+                                                timeZone: timezone,
                                             }).format(now),
                                             timeShort: new Intl.DateTimeFormat('en-US', {
                                                 hour: '2-digit',
                                                 minute: '2-digit',
                                                 hour12: true,
-                                                timeZone: timezone
-                                            }).format(now)
-                                        }
+                                                timeZone: timezone,
+                                            }).format(now),
+                                        },
                                     };
                                 } catch (error) {
                                     console.error('Datetime error:', error);
@@ -1509,30 +1611,43 @@ export async function POST(req: Request) {
                                         title: 'Research Plan',
                                         message: 'Creating research plan...',
                                         timestamp: Date.now(),
-                                        overwrite: true
-                                    }
+                                        overwrite: true,
+                                    },
                                 });
 
                                 // Now generate the research plan
                                 const { object: researchPlan } = await generateObject({
-                                    model: xai("grok-beta"),
+                                    model: xai('grok-beta'),
                                     temperature: 0,
                                     schema: z.object({
-                                        search_queries: z.array(z.object({
-                                            query: z.string(),
-                                            rationale: z.string(),
-                                            source: z.enum(['web', 'academic', 'x', 'all']),
-                                            priority: z.number().min(1).max(5)
-                                        })).max(12),
-                                        required_analyses: z.array(z.object({
-                                            type: z.string(),
-                                            description: z.string(),
-                                            importance: z.number().min(1).max(5)
-                                        })).max(8)
+                                        search_queries: z
+                                            .array(
+                                                z.object({
+                                                    query: z.string(),
+                                                    rationale: z.string(),
+                                                    source: z.enum(['web', 'academic', 'x', 'all']),
+                                                    priority: z.number().min(1).max(5),
+                                                }),
+                                            )
+                                            .max(12),
+                                        required_analyses: z
+                                            .array(
+                                                z.object({
+                                                    type: z.string(),
+                                                    description: z.string(),
+                                                    importance: z.number().min(1).max(5),
+                                                }),
+                                            )
+                                            .max(8),
                                     }),
                                     prompt: `Create a focused research plan for the topic: "${topic}". 
                                         
-                                        Today's date and day of the week: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                        Today's date and day of the week: ${new Date().toLocaleDateString('en-US', {
+                                            weekday: 'long',
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}
                                 
                                         Keep the plan concise but comprehensive, with:
                                         - 4-12 targeted search queries (each can use web, academic, x (Twitter), or all sources)
@@ -1550,7 +1665,7 @@ export async function POST(req: Request) {
                                         Do not use 0 or 1 in the priority field, use numbers between 2 and 4.
                                         
                                         Consider different angles and potential controversies, but maintain focus on the core aspects.
-                                        Ensure the total number of steps (searches + analyses) does not exceed 20.`
+                                        Ensure the total number of steps (searches + analyses) does not exceed 20.`,
                                 });
 
                                 // Generate IDs for all steps based on the plan
@@ -1561,7 +1676,7 @@ export async function POST(req: Request) {
                                             return [
                                                 { id: `search-web-${index}`, type: 'web', query },
                                                 { id: `search-academic-${index}`, type: 'academic', query },
-                                                { id: `search-x-${index}`, type: 'x', query }
+                                                { id: `search-x-${index}`, type: 'x', query },
                                             ];
                                         }
                                         if (query.source === 'x') {
@@ -1575,13 +1690,13 @@ export async function POST(req: Request) {
                                     const analysisSteps = plan.required_analyses.map((analysis, index) => ({
                                         id: `analysis-${index}`,
                                         type: 'analysis',
-                                        analysis
+                                        analysis,
                                     }));
 
                                     return {
                                         planId: 'research-plan',
                                         searchSteps,
-                                        analysisSteps
+                                        analysisSteps,
                                     };
                                 };
 
@@ -1601,13 +1716,13 @@ export async function POST(req: Request) {
                                         totalSteps: totalSteps,
                                         message: 'Research plan created',
                                         timestamp: Date.now(),
-                                        overwrite: true
-                                    }
+                                        overwrite: true,
+                                    },
                                 });
 
                                 // Execute searches
                                 const searchResults = [];
-                                let searchIndex = 0;  // Add index tracker
+                                let searchIndex = 0; // Add index tracker
 
                                 for (const step of stepIds.searchSteps) {
                                     // Send running annotation for this search step
@@ -1617,35 +1732,36 @@ export async function POST(req: Request) {
                                             id: step.id,
                                             type: step.type,
                                             status: 'running',
-                                            title: step.type === 'web'
-                                                ? `Searching the web for "${step.query.query}"`
-                                                : step.type === 'academic'
+                                            title:
+                                                step.type === 'web'
+                                                    ? `Searching the web for "${step.query.query}"`
+                                                    : step.type === 'academic'
                                                     ? `Searching academic papers for "${step.query.query}"`
                                                     : step.type === 'x'
-                                                        ? `Searching X/Twitter for "${step.query.query}"`
-                                                        : `Analyzing ${step.query.query}`,
+                                                    ? `Searching X/Twitter for "${step.query.query}"`
+                                                    : `Analyzing ${step.query.query}`,
                                             query: step.query.query,
                                             message: `Searching ${step.query.source} sources...`,
-                                            timestamp: Date.now()
-                                        }
+                                            timestamp: Date.now(),
+                                        },
                                     });
 
                                     if (step.type === 'web') {
                                         const webResults = await tvly.search(step.query.query, {
                                             searchDepth: depth,
                                             includeAnswer: true,
-                                            maxResults: Math.min(6 - step.query.priority, 10)
+                                            maxResults: Math.min(6 - step.query.priority, 10),
                                         });
 
                                         searchResults.push({
                                             type: 'web',
                                             query: step.query,
-                                            results: webResults.results.map(r => ({
+                                            results: webResults.results.map((r) => ({
                                                 source: 'web',
                                                 title: r.title,
                                                 url: r.url,
-                                                content: r.content
-                                            }))
+                                                content: r.content,
+                                            })),
                                         });
                                         completedSteps++;
                                     } else if (step.type === 'academic') {
@@ -1653,18 +1769,18 @@ export async function POST(req: Request) {
                                             type: 'auto',
                                             numResults: Math.min(6 - step.query.priority, 5),
                                             category: 'research paper',
-                                            summary: true
+                                            summary: true,
                                         });
 
                                         searchResults.push({
                                             type: 'academic',
                                             query: step.query,
-                                            results: academicResults.results.map(r => ({
+                                            results: academicResults.results.map((r) => ({
                                                 source: 'academic',
                                                 title: r.title || '',
                                                 url: r.url || '',
-                                                content: r.summary || ''
-                                            }))
+                                                content: r.summary || '',
+                                            })),
                                         });
                                         completedSteps++;
                                     } else if (step.type === 'x') {
@@ -1680,25 +1796,27 @@ export async function POST(req: Request) {
                                             numResults: step.query.priority,
                                             text: true,
                                             highlights: true,
-                                            includeDomains: ['twitter.com', 'x.com']
+                                            includeDomains: ['twitter.com', 'x.com'],
                                         });
 
                                         // Process tweets to include tweet IDs
-                                        const processedTweets = xResults.results.map(result => {
-                                            const tweetId = extractTweetId(result.url);
-                                            return {
-                                                source: 'x' as const,
-                                                title: result.title || result.author || 'Tweet',
-                                                url: result.url,
-                                                content: result.text || '',
-                                                tweetId: tweetId || undefined
-                                            };
-                                        }).filter(tweet => tweet.tweetId); // Only include tweets with valid IDs
+                                        const processedTweets = xResults.results
+                                            .map((result) => {
+                                                const tweetId = extractTweetId(result.url);
+                                                return {
+                                                    source: 'x' as const,
+                                                    title: result.title || result.author || 'Tweet',
+                                                    url: result.url,
+                                                    content: result.text || '',
+                                                    tweetId: tweetId || undefined,
+                                                };
+                                            })
+                                            .filter((tweet) => tweet.tweetId); // Only include tweets with valid IDs
 
                                         searchResults.push({
                                             type: 'x',
                                             query: step.query,
-                                            results: processedTweets
+                                            results: processedTweets,
                                         });
                                         completedSteps++;
                                     }
@@ -1710,28 +1828,31 @@ export async function POST(req: Request) {
                                             id: step.id,
                                             type: step.type,
                                             status: 'completed',
-                                            title: step.type === 'web'
-                                                ? `Searched the web for "${step.query.query}"`
-                                                : step.type === 'academic'
+                                            title:
+                                                step.type === 'web'
+                                                    ? `Searched the web for "${step.query.query}"`
+                                                    : step.type === 'academic'
                                                     ? `Searched academic papers for "${step.query.query}"`
                                                     : step.type === 'x'
-                                                        ? `Searched X/Twitter for "${step.query.query}"`
-                                                        : `Analysis of ${step.query.query} complete`,
+                                                    ? `Searched X/Twitter for "${step.query.query}"`
+                                                    : `Analysis of ${step.query.query} complete`,
                                             query: step.query.query,
-                                            results: searchResults[searchResults.length - 1].results.map(r => {
+                                            results: searchResults[searchResults.length - 1].results.map((r) => {
                                                 return { ...r };
                                             }),
-                                            message: `Found ${searchResults[searchResults.length - 1].results.length} results`,
+                                            message: `Found ${
+                                                searchResults[searchResults.length - 1].results.length
+                                            } results`,
                                             timestamp: Date.now(),
-                                            overwrite: true
-                                        }
+                                            overwrite: true,
+                                        },
                                     });
 
-                                    searchIndex++;  // Increment index
+                                    searchIndex++; // Increment index
                                 }
 
                                 // Perform analyses
-                                let analysisIndex = 0;  // Add index tracker
+                                let analysisIndex = 0; // Add index tracker
 
                                 for (const step of stepIds.analysisSteps) {
                                     dataStream.writeMessageAnnotation({
@@ -1743,25 +1864,29 @@ export async function POST(req: Request) {
                                             title: `Analyzing ${step.analysis.type}`,
                                             analysisType: step.analysis.type,
                                             message: `Analyzing ${step.analysis.type}...`,
-                                            timestamp: Date.now()
-                                        }
+                                            timestamp: Date.now(),
+                                        },
                                     });
 
                                     const { object: analysisResult } = await generateObject({
-                                        model: xai("grok-beta"),
+                                        model: xai('grok-beta'),
                                         temperature: 0.5,
                                         schema: z.object({
-                                            findings: z.array(z.object({
-                                                insight: z.string(),
-                                                evidence: z.array(z.string()),
-                                                confidence: z.number().min(0).max(1)
-                                            })),
+                                            findings: z.array(
+                                                z.object({
+                                                    insight: z.string(),
+                                                    evidence: z.array(z.string()),
+                                                    confidence: z.number().min(0).max(1),
+                                                }),
+                                            ),
                                             implications: z.array(z.string()),
-                                            limitations: z.array(z.string())
+                                            limitations: z.array(z.string()),
                                         }),
-                                        prompt: `Perform a ${step.analysis.type} analysis on the search results. ${step.analysis.description}
+                                        prompt: `Perform a ${step.analysis.type} analysis on the search results. ${
+                                            step.analysis.description
+                                        }
                                             Consider all sources and their reliability.
-                                            Search results: ${JSON.stringify(searchResults)}`
+                                            Search results: ${JSON.stringify(searchResults)}`,
                                     });
 
                                     dataStream.writeMessageAnnotation({
@@ -1775,11 +1900,11 @@ export async function POST(req: Request) {
                                             findings: analysisResult.findings,
                                             message: `Analysis complete`,
                                             timestamp: Date.now(),
-                                            overwrite: true
-                                        }
+                                            overwrite: true,
+                                        },
                                     });
 
-                                    analysisIndex++;  // Increment index
+                                    analysisIndex++; // Increment index
                                 }
 
                                 // After all analyses are complete, send running state for gap analysis
@@ -1792,31 +1917,37 @@ export async function POST(req: Request) {
                                         title: 'Research Gaps and Limitations',
                                         analysisType: 'gaps',
                                         message: 'Analyzing research gaps and limitations...',
-                                        timestamp: Date.now()
-                                    }
+                                        timestamp: Date.now(),
+                                    },
                                 });
 
                                 // After all analyses are complete, analyze limitations and gaps
                                 const { object: gapAnalysis } = await generateObject({
-                                    model: xai("grok-beta"),
+                                    model: xai('grok-beta'),
                                     temperature: 0,
                                     schema: z.object({
-                                        limitations: z.array(z.object({
-                                            type: z.string(),
-                                            description: z.string(),
-                                            severity: z.number().min(2).max(10),
-                                            potential_solutions: z.array(z.string())
-                                        })),
-                                        knowledge_gaps: z.array(z.object({
-                                            topic: z.string(),
-                                            reason: z.string(),
-                                            additional_queries: z.array(z.string())
-                                        })),
-                                        recommended_followup: z.array(z.object({
-                                            action: z.string(),
-                                            rationale: z.string(),
-                                            priority: z.number().min(2).max(10)
-                                        }))
+                                        limitations: z.array(
+                                            z.object({
+                                                type: z.string(),
+                                                description: z.string(),
+                                                severity: z.number().min(2).max(10),
+                                                potential_solutions: z.array(z.string()),
+                                            }),
+                                        ),
+                                        knowledge_gaps: z.array(
+                                            z.object({
+                                                topic: z.string(),
+                                                reason: z.string(),
+                                                additional_queries: z.array(z.string()),
+                                            }),
+                                        ),
+                                        recommended_followup: z.array(
+                                            z.object({
+                                                action: z.string(),
+                                                rationale: z.string(),
+                                                priority: z.number().min(2).max(10),
+                                            }),
+                                        ),
                                     }),
                                     prompt: `Analyze the research results and identify limitations, knowledge gaps, and recommended follow-up actions.
                                         Consider:
@@ -1836,11 +1967,13 @@ export async function POST(req: Request) {
                                         Design your additional_queries to work well across these different source types.
                                         
                                         Research results: ${JSON.stringify(searchResults)}
-                                        Analysis findings: ${JSON.stringify(stepIds.analysisSteps.map(step => ({
-                                        type: step.analysis.type,
-                                        description: step.analysis.description,
-                                        importance: step.analysis.importance
-                                    })))}`
+                                        Analysis findings: ${JSON.stringify(
+                                            stepIds.analysisSteps.map((step) => ({
+                                                type: step.analysis.type,
+                                                description: step.analysis.description,
+                                                importance: step.analysis.importance,
+                                            })),
+                                        )}`,
                                 });
 
                                 // Send gap analysis update
@@ -1852,10 +1985,10 @@ export async function POST(req: Request) {
                                         status: 'completed',
                                         title: 'Research Gaps and Limitations',
                                         analysisType: 'gaps',
-                                        findings: gapAnalysis.limitations.map(l => ({
+                                        findings: gapAnalysis.limitations.map((l) => ({
                                             insight: l.description,
                                             evidence: l.potential_solutions,
-                                            confidence: (6 - l.severity) / 5
+                                            confidence: (6 - l.severity) / 5,
                                         })),
                                         gaps: gapAnalysis.knowledge_gaps,
                                         recommendations: gapAnalysis.recommended_followup,
@@ -1863,8 +1996,8 @@ export async function POST(req: Request) {
                                         timestamp: Date.now(),
                                         overwrite: true,
                                         completedSteps: completedSteps + 1,
-                                        totalSteps: totalSteps + (depth === 'advanced' ? 2 : 1)
-                                    }
+                                        totalSteps: totalSteps + (depth === 'advanced' ? 2 : 1),
+                                    },
                                 });
 
                                 let synthesis;
@@ -1872,7 +2005,7 @@ export async function POST(req: Request) {
                                 // If there are significant gaps and depth is 'advanced', perform additional research
                                 if (depth === 'advanced' && gapAnalysis.knowledge_gaps.length > 0) {
                                     // For important gaps, create 'all' source queries to be comprehensive
-                                    const additionalQueries = gapAnalysis.knowledge_gaps.flatMap(gap =>
+                                    const additionalQueries = gapAnalysis.knowledge_gaps.flatMap((gap) =>
                                         gap.additional_queries.map((query, idx) => {
                                             // For critical gaps, use 'all' sources for the first query
                                             // Distribute others across different source types for efficiency
@@ -1883,16 +2016,19 @@ export async function POST(req: Request) {
                                             if (idx === 0) {
                                                 source = 'all';
                                             } else {
-                                                source = sourceTypes[idx % (sourceTypes.length - 1)] as 'web' | 'academic' | 'x';
+                                                source = sourceTypes[idx % (sourceTypes.length - 1)] as
+                                                    | 'web'
+                                                    | 'academic'
+                                                    | 'x';
                                             }
 
                                             return {
                                                 query,
                                                 rationale: gap.reason,
                                                 source,
-                                                priority: 3
+                                                priority: 3,
                                             };
-                                        })
+                                        }),
                                     );
 
                                     // Execute additional searches for gaps
@@ -1906,7 +2042,7 @@ export async function POST(req: Request) {
                                             const webResults = await tvly.search(query.query, {
                                                 searchDepth: depth,
                                                 includeAnswer: true,
-                                                maxResults: 5
+                                                maxResults: 5,
                                             });
 
                                             // Add to search results
@@ -1916,40 +2052,46 @@ export async function POST(req: Request) {
                                                     query: query.query,
                                                     rationale: query.rationale,
                                                     source: 'web',
-                                                    priority: query.priority
+                                                    priority: query.priority,
                                                 },
-                                                results: webResults.results.map(r => ({
+                                                results: webResults.results.map((r) => ({
                                                     source: 'web',
                                                     title: r.title,
                                                     url: r.url,
-                                                    content: r.content
-                                                }))
+                                                    content: r.content,
+                                                })),
                                             });
 
                                             // Send completed annotation for web search
                                             dataStream.writeMessageAnnotation({
                                                 type: 'research_update',
                                                 data: {
-                                                    id: query.source === 'all' ? `gap-search-web-${searchIndex - 3}` : gapSearchId,
+                                                    id:
+                                                        query.source === 'all'
+                                                            ? `gap-search-web-${searchIndex - 3}`
+                                                            : gapSearchId,
                                                     type: 'web',
                                                     status: 'completed',
                                                     title: `Additional web search for "${query.query}"`,
                                                     query: query.query,
-                                                    results: webResults.results.map(r => ({
+                                                    results: webResults.results.map((r) => ({
                                                         source: 'web',
                                                         title: r.title,
                                                         url: r.url,
-                                                        content: r.content
+                                                        content: r.content,
                                                     })),
                                                     message: `Found ${webResults.results.length} results`,
                                                     timestamp: Date.now(),
-                                                    overwrite: true
-                                                }
+                                                    overwrite: true,
+                                                },
                                             });
                                         }
 
                                         if (query.source === 'academic' || query.source === 'all') {
-                                            const academicSearchId = query.source === 'all' ? `gap-search-academic-${searchIndex++}` : gapSearchId;
+                                            const academicSearchId =
+                                                query.source === 'all'
+                                                    ? `gap-search-academic-${searchIndex++}`
+                                                    : gapSearchId;
 
                                             // Send running annotation for academic search if it's for 'all' source
                                             if (query.source === 'all') {
@@ -1962,8 +2104,8 @@ export async function POST(req: Request) {
                                                         title: `Additional academic search for "${query.query}"`,
                                                         query: query.query,
                                                         message: `Searching academic sources to fill knowledge gap: ${query.rationale}`,
-                                                        timestamp: Date.now()
-                                                    }
+                                                        timestamp: Date.now(),
+                                                    },
                                                 });
                                             }
 
@@ -1972,7 +2114,7 @@ export async function POST(req: Request) {
                                                 type: 'auto',
                                                 numResults: 3,
                                                 category: 'research paper',
-                                                summary: true
+                                                summary: true,
                                             });
 
                                             // Add to search results
@@ -1982,14 +2124,14 @@ export async function POST(req: Request) {
                                                     query: query.query,
                                                     rationale: query.rationale,
                                                     source: 'academic',
-                                                    priority: query.priority
+                                                    priority: query.priority,
                                                 },
-                                                results: academicResults.results.map(r => ({
+                                                results: academicResults.results.map((r) => ({
                                                     source: 'academic',
                                                     title: r.title || '',
                                                     url: r.url || '',
-                                                    content: r.summary || ''
-                                                }))
+                                                    content: r.summary || '',
+                                                })),
                                             });
 
                                             // Send completed annotation for academic search
@@ -2001,21 +2143,22 @@ export async function POST(req: Request) {
                                                     status: 'completed',
                                                     title: `Additional academic search for "${query.query}"`,
                                                     query: query.query,
-                                                    results: academicResults.results.map(r => ({
+                                                    results: academicResults.results.map((r) => ({
                                                         source: 'academic',
                                                         title: r.title || '',
                                                         url: r.url || '',
-                                                        content: r.summary || ''
+                                                        content: r.summary || '',
                                                     })),
                                                     message: `Found ${academicResults.results.length} results`,
                                                     timestamp: Date.now(),
-                                                    overwrite: query.source === 'all' ? true : false
-                                                }
+                                                    overwrite: query.source === 'all' ? true : false,
+                                                },
                                             });
                                         }
 
                                         if (query.source === 'x' || query.source === 'all') {
-                                            const xSearchId = query.source === 'all' ? `gap-search-x-${searchIndex++}` : gapSearchId;
+                                            const xSearchId =
+                                                query.source === 'all' ? `gap-search-x-${searchIndex++}` : gapSearchId;
 
                                             // Send running annotation for X search if it's for 'all' source
                                             if (query.source === 'all') {
@@ -2028,8 +2171,8 @@ export async function POST(req: Request) {
                                                         title: `Additional X/Twitter search for "${query.query}"`,
                                                         query: query.query,
                                                         message: `Searching X/Twitter to fill knowledge gap: ${query.rationale}`,
-                                                        timestamp: Date.now()
-                                                    }
+                                                        timestamp: Date.now(),
+                                                    },
                                                 });
                                             }
 
@@ -2045,12 +2188,12 @@ export async function POST(req: Request) {
                                                 numResults: 5,
                                                 text: true,
                                                 highlights: true,
-                                                includeDomains: ['twitter.com', 'x.com']
+                                                includeDomains: ['twitter.com', 'x.com'],
                                             });
 
                                             // Process tweets to include tweet IDs - properly handling undefined
                                             const processedTweets = xResults.results
-                                                .map(result => {
+                                                .map((result) => {
                                                     const tweetId = extractTweetId(result.url);
                                                     if (!tweetId) return null; // Skip entries without valid tweet IDs
 
@@ -2059,11 +2202,19 @@ export async function POST(req: Request) {
                                                         title: result.title || result.author || 'Tweet',
                                                         url: result.url,
                                                         content: result.text || '',
-                                                        tweetId // Now it's definitely string, not undefined
+                                                        tweetId, // Now it's definitely string, not undefined
                                                     };
                                                 })
-                                                .filter((tweet): tweet is { source: 'x', title: string, url: string, content: string, tweetId: string } =>
-                                                    tweet !== null
+                                                .filter(
+                                                    (
+                                                        tweet,
+                                                    ): tweet is {
+                                                        source: 'x';
+                                                        title: string;
+                                                        url: string;
+                                                        content: string;
+                                                        tweetId: string;
+                                                    } => tweet !== null,
                                                 );
 
                                             // Add to search results
@@ -2073,9 +2224,9 @@ export async function POST(req: Request) {
                                                     query: query.query,
                                                     rationale: query.rationale,
                                                     source: 'x',
-                                                    priority: query.priority
+                                                    priority: query.priority,
                                                 },
-                                                results: processedTweets
+                                                results: processedTweets,
                                             });
 
                                             // Send completed annotation for X search
@@ -2090,8 +2241,8 @@ export async function POST(req: Request) {
                                                     results: processedTweets,
                                                     message: `Found ${processedTweets.length} results`,
                                                     timestamp: Date.now(),
-                                                    overwrite: query.source === 'all' ? true : false
-                                                }
+                                                    overwrite: query.source === 'all' ? true : false,
+                                                },
                                             });
                                         }
                                     }
@@ -2106,21 +2257,23 @@ export async function POST(req: Request) {
                                             title: 'Final Research Synthesis',
                                             analysisType: 'synthesis',
                                             message: 'Synthesizing all research findings...',
-                                            timestamp: Date.now()
-                                        }
+                                            timestamp: Date.now(),
+                                        },
                                     });
 
                                     // Perform final synthesis of all findings
                                     const { object: finalSynthesis } = await generateObject({
-                                        model: xai("grok-beta"),
+                                        model: xai('grok-beta'),
                                         temperature: 0,
                                         schema: z.object({
-                                            key_findings: z.array(z.object({
-                                                finding: z.string(),
-                                                confidence: z.number().min(0).max(1),
-                                                supporting_evidence: z.array(z.string())
-                                            })),
-                                            remaining_uncertainties: z.array(z.string())
+                                            key_findings: z.array(
+                                                z.object({
+                                                    finding: z.string(),
+                                                    confidence: z.number().min(0).max(1),
+                                                    supporting_evidence: z.array(z.string()),
+                                                }),
+                                            ),
+                                            remaining_uncertainties: z.array(z.string()),
                                         }),
                                         prompt: `Synthesize all research findings, including gap analysis and follow-up research.
                                             Highlight key conclusions and remaining uncertainties.
@@ -2128,7 +2281,7 @@ export async function POST(req: Request) {
                                             
                                             Original results: ${JSON.stringify(searchResults)}
                                             Gap analysis: ${JSON.stringify(gapAnalysis)}
-                                            Additional findings: ${JSON.stringify(additionalQueries)}`
+                                            Additional findings: ${JSON.stringify(additionalQueries)}`,
                                     });
 
                                     synthesis = finalSynthesis;
@@ -2142,18 +2295,18 @@ export async function POST(req: Request) {
                                             status: 'completed',
                                             title: 'Final Research Synthesis',
                                             analysisType: 'synthesis',
-                                            findings: finalSynthesis.key_findings.map(f => ({
+                                            findings: finalSynthesis.key_findings.map((f) => ({
                                                 insight: f.finding,
                                                 evidence: f.supporting_evidence,
-                                                confidence: f.confidence
+                                                confidence: f.confidence,
                                             })),
                                             uncertainties: finalSynthesis.remaining_uncertainties,
                                             message: `Synthesized ${finalSynthesis.key_findings.length} key findings`,
                                             timestamp: Date.now(),
                                             overwrite: true,
                                             completedSteps: totalSteps + (depth === 'advanced' ? 2 : 1) - 1,
-                                            totalSteps: totalSteps + (depth === 'advanced' ? 2 : 1)
-                                        }
+                                            totalSteps: totalSteps + (depth === 'advanced' ? 2 : 1),
+                                        },
                                     });
                                 }
 
@@ -2166,49 +2319,44 @@ export async function POST(req: Request) {
                                     completedSteps: totalSteps + (depth === 'advanced' ? 2 : 1),
                                     totalSteps: totalSteps + (depth === 'advanced' ? 2 : 1),
                                     isComplete: true,
-                                    timestamp: Date.now()
+                                    timestamp: Date.now(),
                                 };
 
                                 dataStream.writeMessageAnnotation({
                                     type: 'research_update',
                                     data: {
                                         ...finalProgress,
-                                        overwrite: true
-                                    }
+                                        overwrite: true,
+                                    },
                                 });
 
                                 return {
                                     plan: researchPlan,
                                     results: searchResults,
-                                    synthesis: synthesis
+                                    synthesis: synthesis,
                                 };
                             },
                         }),
                     },
-                    experimental_repairToolCall: async ({
-                        toolCall,
-                        tools,
-                        parameterSchema,
-                        error,
-                    }) => {
+                    experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
                         if (NoSuchToolError.isInstance(error)) {
                             return null; // do not attempt to fix invalid tool names
                         }
 
-                        console.log("Fixing tool call================================");
-                        console.log("toolCall", toolCall);
-                        console.log("tools", tools);
-                        console.log("parameterSchema", parameterSchema);
-                        console.log("error", error);
+                        console.log('Fixing tool call================================');
+                        console.log('toolCall', toolCall);
+                        console.log('tools', tools);
+                        console.log('parameterSchema', parameterSchema);
+                        console.log('error', error);
 
                         const tool = tools[toolCall.toolName as keyof typeof tools];
 
                         const { object: repairedArgs } = await generateObject({
-                            model: scira.languageModel("scira-default"),
+                            model: scira.languageModel('scira-default'),
                             schema: tool.parameters,
                             prompt: [
                                 `The model tried to call the tool "${toolCall.toolName}"` +
-                                ` with the following arguments:`,
+                                    ` with the following arguments:`,
                                 JSON.stringify(toolCall.args),
                                 `The tool accepts the following schema:`,
                                 JSON.stringify(parameterSchema(toolCall)),
@@ -2216,11 +2364,15 @@ export async function POST(req: Request) {
                                 'Do not use print statements stock chart tool.',
                                 `For the stock chart tool you have to generate a python code with matplotlib and yfinance to plot the stock chart.`,
                                 `For the web search make multiple queries to get the best results.`,
-                                `Today's date is ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
+                                `Today's date is ${new Date().toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                })}`,
                             ].join('\n'),
                         });
 
-                        console.log("repairedArgs", repairedArgs);
+                        console.log('repairedArgs', repairedArgs);
 
                         return { ...toolCall, args: JSON.stringify(repairedArgs) };
                     },
@@ -2247,10 +2399,10 @@ export async function POST(req: Request) {
                 });
 
                 toolsResult.mergeIntoDataStream(dataStream, {
-                    experimental_sendFinish: false
+                    experimental_sendFinish: false,
                 });
 
-                console.log("we got here");
+                console.log('we got here');
 
                 const response = streamText({
                     model: scira.languageModel(model),
@@ -2275,10 +2427,10 @@ export async function POST(req: Request) {
                 return response.mergeIntoDataStream(dataStream, {
                     experimental_sendStart: true,
                 });
-            }
-        })
+            },
+        });
     } else {
-        console.log("Running inside part 2");
+        console.log('Running inside part 2');
         return createDataStreamResponse({
             execute: async (dataStream) => {
                 const result = streamText({
@@ -2286,14 +2438,14 @@ export async function POST(req: Request) {
                     maxSteps: 5,
                     providerOptions: {
                         groq: {
-                            reasoning_format: group === "chat" ? "raw" : "parsed",
+                            reasoning_format: group === 'chat' ? 'raw' : 'parsed',
                         },
                         anthropic: {
                             thinking: {
-                                type: group === "chat" ? "enabled" : "disabled",
-                                budgetTokens: 12000
-                            }
-                        }
+                                type: group === 'chat' ? 'enabled' : 'disabled',
+                                budgetTokens: 12000,
+                            },
+                        },
                     },
                     messages: convertToCoreMessages(messages),
                     temperature: 0,
@@ -2301,7 +2453,7 @@ export async function POST(req: Request) {
                         chunking: 'word',
                         delayInMs: 15,
                     }),
-                    experimental_activeTools: group === 'chat' ? [] : ["memory_manager"],
+                    experimental_activeTools: group === 'chat' ? [] : ['memory_manager'],
                     system: systemPrompt,
                     tools: {
                         memory_manager: tool({
@@ -2311,16 +2463,20 @@ export async function POST(req: Request) {
                                 content: z.string().optional().describe('The memory content for add operation'),
                                 query: z.string().optional().describe('The search query for search operations'),
                             }),
-                            execute: async ({ action, content, query }: {
+                            execute: async ({
+                                action,
+                                content,
+                                query,
+                            }: {
                                 action: 'add' | 'search';
                                 content?: string;
                                 query?: string;
                             }) => {
                                 const client = new MemoryClient({ apiKey: serverEnv.MEM0_API_KEY });
 
-                                console.log("action", action);
-                                console.log("content", content);
-                                console.log("query", query);
+                                console.log('action', action);
+                                console.log('content', content);
+                                console.log('query', query);
 
                                 try {
                                     switch (action) {
@@ -2329,26 +2485,26 @@ export async function POST(req: Request) {
                                                 return {
                                                     success: false,
                                                     action: 'add',
-                                                    message: 'Content is required for add operation'
+                                                    message: 'Content is required for add operation',
                                                 };
                                             }
                                             const result = await client.add(content, {
                                                 user_id,
                                                 org_id: serverEnv.MEM0_ORG_ID,
-                                                project_id: serverEnv.MEM0_PROJECT_ID
+                                                project_id: serverEnv.MEM0_PROJECT_ID,
                                             });
                                             if (result.length === 0) {
                                                 return {
                                                     success: false,
                                                     action: 'add',
-                                                    message: 'No memory added'
+                                                    message: 'No memory added',
                                                 };
                                             }
-                                            console.log("result", result);
+                                            console.log('result', result);
                                             return {
                                                 success: true,
                                                 action: 'add',
-                                                memory: result[0]
+                                                memory: result[0],
                                             };
                                         }
                                         case 'search': {
@@ -2356,29 +2512,27 @@ export async function POST(req: Request) {
                                                 return {
                                                     success: false,
                                                     action: 'search',
-                                                    message: 'Query is required for search operation'
+                                                    message: 'Query is required for search operation',
                                                 };
                                             }
                                             const searchFilters = {
-                                                AND: [
-                                                    { user_id },
-                                                ]
+                                                AND: [{ user_id }],
                                             };
                                             const result = await client.search(query, {
                                                 filters: searchFilters,
-                                                api_version: 'v2'
+                                                api_version: 'v2',
                                             });
                                             if (!result || !result[0]) {
                                                 return {
                                                     success: false,
                                                     action: 'search',
-                                                    message: 'No results found for the search query'
+                                                    message: 'No results found for the search query',
                                                 };
                                             }
                                             return {
                                                 success: true,
                                                 action: 'search',
-                                                results: result[0]
+                                                results: result[0],
                                             };
                                         }
                                     }
@@ -2389,30 +2543,25 @@ export async function POST(req: Request) {
                             },
                         }),
                     },
-                    experimental_repairToolCall: async ({
-                        toolCall,
-                        tools,
-                        parameterSchema,
-                        error,
-                    }) => {
+                    experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
                         if (NoSuchToolError.isInstance(error)) {
                             return null; // do not attempt to fix invalid tool names
                         }
 
-                        console.log("Fixing tool call================================");
-                        console.log("toolCall", toolCall);
-                        console.log("tools", tools);
-                        console.log("parameterSchema", parameterSchema);
-                        console.log("error", error);
+                        console.log('Fixing tool call================================');
+                        console.log('toolCall', toolCall);
+                        console.log('tools', tools);
+                        console.log('parameterSchema', parameterSchema);
+                        console.log('error', error);
 
                         const tool = tools[toolCall.toolName as keyof typeof tools];
 
                         const { object: repairedArgs } = await generateObject({
-                            model: scira.languageModel("scira-default"),
+                            model: scira.languageModel('scira-default'),
                             schema: tool.parameters,
                             prompt: [
                                 `The model tried to call the tool "${toolCall.toolName}"` +
-                                ` with the following arguments:`,
+                                    ` with the following arguments:`,
                                 JSON.stringify(toolCall.args),
                                 `The tool accepts the following schema:`,
                                 JSON.stringify(parameterSchema(toolCall)),
@@ -2420,11 +2569,15 @@ export async function POST(req: Request) {
                                 'Do not use print statements stock chart tool.',
                                 `For the stock chart tool you have to generate a python code with matplotlib and yfinance to plot the stock chart.`,
                                 `For the web search make multiple queries to get the best results.`,
-                                `Today's date is ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
+                                `Today's date is ${new Date().toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                })}`,
                             ].join('\n'),
                         });
 
-                        console.log("repairedArgs", repairedArgs);
+                        console.log('repairedArgs', repairedArgs);
 
                         return { ...toolCall, args: JSON.stringify(repairedArgs) };
                     },
@@ -2453,7 +2606,7 @@ export async function POST(req: Request) {
                 result.mergeIntoDataStream(dataStream, {
                     sendReasoning: true,
                 });
-            }
-        })
+            },
+        });
     }
 }
