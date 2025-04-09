@@ -23,7 +23,7 @@ export function getUserId(): string {
   return userId;
 }
 
-export type SearchGroupId = 'web' | 'academic' | 'youtube' | 'x' | 'analysis' | 'chat' | 'extreme' | 'buddy';
+export type SearchGroupId = 'web' | 'academic' | 'youtube' | 'x' | 'analysis' | 'chat' | 'extreme' | 'buddy' | 'banxueya';
 
 export const searchGroups = [
   {

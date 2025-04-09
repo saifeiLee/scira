@@ -678,7 +678,7 @@ const HomeContent = () => {
     const userId = useMemo(() => getUserId(), []);
 
     const chatOptions: UseChatOptions = useMemo(() => ({
-        api: '/api/search',
+        api: '/api/plan',
         experimental_throttle: 500,
         body: {
             model: selectedModel,
@@ -2008,6 +2008,21 @@ const ToolInvocationListView = memo(
             (toolInvocation: ToolInvocation, index: number) => {
                 const args = JSON.parse(JSON.stringify(toolInvocation.args));
                 const result = 'result' in toolInvocation ? JSON.parse(JSON.stringify(toolInvocation.result)) : null;
+                console.log('toolInvocation.toolName:', toolInvocation.toolName)
+                if (!result) {
+                    return <SearchLoadingState
+                        icon={Heart}
+                        text="思考中..."
+                        color="blue"
+                    />
+                }
+                if (toolInvocation.toolName === 'reason_thinking') {
+                    return <div>
+                        <p>
+                            {result.thinkingResult}
+                        </p>
+                    </div>
+                }
 
                 if (toolInvocation.toolName === 'find_place') {
                     if (!result) {

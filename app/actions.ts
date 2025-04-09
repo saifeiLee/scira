@@ -3,7 +3,7 @@
 
 import { serverEnv } from '@/env/server';
 import { SearchGroupId } from '@/lib/utils';
-import { xai } from '@ai-sdk/xai';
+import { customModel } from '@/lib/ai';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
@@ -13,7 +13,7 @@ export async function suggestQuestions(history: any[]) {
   console.log(history);
 
   const { object } = await generateObject({
-    model: xai("grok-beta"),
+    model: customModel("gpt-4o"),
     temperature: 0,
     maxTokens: 300,
     topP: 0.3,
@@ -107,7 +107,7 @@ export async function fetchMetadata(url: string) {
 const groupTools = {
   web: [
     'web_search', 'get_weather_data',
-    'retrieve', 'text_translate',
+    'retrieve', 'text_translate', 'datetime',
     'nearby_search', 'track_flight',
     'movie_or_tv_search', 'trending_movies',
     'trending_tv', 'datetime'
@@ -119,6 +119,7 @@ const groupTools = {
   analysis: ['code_interpreter', 'stock_chart', 'currency_converter', 'datetime'] as const,
   chat: [] as const,
   extreme: ['reason_search'] as const,
+  banxueya: [],
 } as const;
 
 // Separate tool instructions and response guidelines for each group
@@ -264,6 +265,13 @@ const groupToolInstructions = {
     - Deep analysis of findings
     - Cross-referencing and validation
   - You MUST run the tool first and then write the response with citations!`,
+
+  banxueya: `
+  Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}
+  ### Reason Thinking Tool:
+    - Analyze the problems encountered by the user and identify implicit needs
+    - Attend to the user's emotions
+  `
 } as const;
 
 const groupResponseGuidelines = {
@@ -496,6 +504,11 @@ const groupResponseGuidelines = {
   - CITATIONS SHOULD BE ON EVERYTHING YOU SAY
   - Include analysis of reliability and limitations
   - In the response avoid referencing the citation directly, make it a citation in the statement`,
+
+  banxueya: `
+  You are 伴学丫, a professional AI assistant to help user make study plan.
+  The current date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+  `
 } as const;
 
 const groupPrompts = {
@@ -507,6 +520,7 @@ const groupPrompts = {
   analysis: `${groupResponseGuidelines.analysis}\n\n${groupToolInstructions.analysis}`,
   chat: `${groupResponseGuidelines.chat}`,
   extreme: `${groupResponseGuidelines.extreme}\n\n${groupToolInstructions.extreme}`,
+  banxueya: `${groupResponseGuidelines.banxueya}\n\n${groupToolInstructions.banxueya}`,
 } as const;
 
 export async function getGroupConfig(groupId: SearchGroupId = 'web') {

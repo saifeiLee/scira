@@ -2,6 +2,7 @@
 import { getGroupConfig } from '@/app/actions';
 import { serverEnv } from '@/env/server';
 import { xai } from '@ai-sdk/xai';
+import { openai } from '@/lib/ai';
 import { cohere } from '@ai-sdk/cohere';
 import { mistral } from '@ai-sdk/mistral';
 import CodeInterpreter from '@e2b/code-interpreter';
@@ -24,7 +25,8 @@ import MemoryClient from 'mem0ai';
 
 const scira = customProvider({
     languageModels: {
-        'scira-default': xai('grok-2-1212'),
+        'scira-default': openai('gpt-4o'),
+        // 'scira-default': openai('o1-mini'),
         'scira-vision': xai('grok-2-vision-1212'),
         'scira-cmd-a': cohere('command-a-03-2025'),
         'scira-mistral': mistral('mistral-small-latest'),
