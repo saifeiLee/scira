@@ -119,7 +119,7 @@ const groupTools = {
   analysis: ['code_interpreter', 'stock_chart', 'currency_converter', 'datetime'] as const,
   chat: [] as const,
   extreme: ['reason_search'] as const,
-  banxueya: [],
+  banxueya: ['ask_user_info', 'search_province_grade_details'],
 } as const;
 
 // Separate tool instructions and response guidelines for each group
@@ -268,9 +268,11 @@ const groupToolInstructions = {
 
   banxueya: `
   Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}
-  ### Reason Thinking Tool:
-    - Analyze the problems encountered by the user and identify implicit needs
-    - Attend to the user's emotions
+  ### Ask User Info Tool:
+  - 用户是中学生，为了更好的帮助用户解决问题，需要询问用户信息, 包括省份、年级、目标提升的科目
+
+  ### Search Province Grade Details Tool:
+  - 根据省份和年级搜索学情信息，用于辅助诊断用户当前的学情，从而保证给出高质量的建议和规划
   `
 } as const;
 
@@ -506,8 +508,12 @@ const groupResponseGuidelines = {
   - In the response avoid referencing the citation directly, make it a citation in the statement`,
 
   banxueya: `
-  You are 伴学丫, a professional AI assistant to help user make study plan.
+  You are 伴学丫, a professional AI assistant to help user make study plan and help user improve their study.
+  If user want to improve study grades, you MUST run the tool to get users information first. And then call the tool to search useful data.
+  Then output your response.
+  
   The current date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+  Response in humble kind of language.
   `
 } as const;
 

@@ -3,11 +3,17 @@ import { createDataStreamResponse, streamText, convertToCoreMessages, tool, gene
 import { openai } from '@/lib/ai';
 import { z } from 'zod';
 
-const ReasonThinkingPrompt = `
-  ### Reason Thinking Tool:
+const ReasonThinkingToolPrompt = `
+  ### Reason Thinking Tool
+    You are reasoning thinking content generator. Output your thinking process about user's input.
+    You should:
     - Analyze the problems encountered by the user and identify implicit needs
     - Attend to the user's emotions
-    - think step by step
+    - Output in users' language
+`;
+
+const OutputThinkingPrompt = `
+输出思考过程，思考如何回答用户。你输出会用于指导我如何回答用户。
 `;
 
 export async function POST(req: Request) {
@@ -22,12 +28,15 @@ export async function POST(req: Request) {
     }
     return createDataStreamResponse({
         execute: async (dataStream) => {
+            const lastMessage = messages[messages.length - 1];
+            console.log('lastMessage: ', lastMessage);
+
             // 思考过程
             const thinkingToolResult = streamText({
                 model: openai('gpt-4o'),
                 messages: convertToCoreMessages(messages),
                 temperature: 0,
-                system: ReasonThinkingPrompt,
+                system: ReasonThinkingToolPrompt,
                 toolChoice: 'required',
                 tools: {
                     reason_thinking: tool({
@@ -43,7 +52,7 @@ export async function POST(req: Request) {
                                 model: openai('gpt-4o'),
                                 messages: convertToCoreMessages(messages),
                                 system:
-                                    ReasonThinkingPrompt +
+                                    OutputThinkingPrompt +
                                     '\n\n' +
                                     `
                                 Problem: ${problem}
@@ -59,6 +68,61 @@ export async function POST(req: Request) {
                 },
             });
             thinkingToolResult.mergeIntoDataStream(dataStream);
+            // 工具调用
+            const toolsResult = streamText({
+                model: openai('gpt-4o'),
+                messages: [...convertToCoreMessages(messages), ...(await thinkingToolResult.response).messages],
+                temperature: 1,
+                toolChoice: 'auto',
+                system: systemPrompt,
+                tools: {
+                    ask_user_info: tool({
+                        description: '向学生询问个人信息',
+                        parameters: z.object({
+                            announcement: z
+                                .string()
+                                .describe(
+                                    'Announcement to the user, describe what you want to ask and what is it for.',
+                                ),
+                        }),
+                    }),
+                    search_province_grade_details: tool({
+                        description: '根据省份和年级搜索相关信息',
+                        parameters: z.object({
+                            province: z.string().describe('省份'),
+                            grade: z.string().describe('年级'),
+                            subject: z.string().describe('科目'),
+                        }),
+                        execute: async ({ province, grade, subject }) => {
+                            console.log('省份: ', province);
+                            console.log('年级: ', grade);
+                            console.log('科目: ', subject);
+                            const searchResult = `${province}过去3年的一本率为10%，二本率为20%，三本率为30%.
+                                其中${subject}的平均分是105分，满分是150分。`;
+                            // 这里应该给出规划结果
+                            return {
+                                result: searchResult,
+                            };
+                        },
+                    }),
+                },
+            });
+
+            toolsResult.mergeIntoDataStream(dataStream);
+            // 输出回复
+            const response = streamText({
+                model: openai('gpt-4o'),
+                system: responseGuidelines,
+                messages: [...convertToCoreMessages(messages), ...(await toolsResult.response).messages],
+                onFinish(event) {
+                    console.log('Fin reason[2]: ', event.finishReason);
+                    console.log('Reasoning[2]: ', event.reasoning);
+                    console.log('reasoning details[2]: ', event.reasoningDetails);
+                    console.log('Steps[2] ', event.steps);
+                    console.log('Messages[2]: ', event.response.messages);
+                },
+            })
+            return response.mergeIntoDataStream(dataStream);
 
             // 制定计划
             // const planResult = streamText({

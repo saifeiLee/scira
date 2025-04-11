@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client';
 import 'katex/dist/katex.min.css';
 
 import { BorderTrail } from '@/components/core/border-trail';
@@ -12,30 +12,27 @@ import TMDBResult from '@/components/movie-info';
 import MultiSearch from '@/components/multi-search';
 import NearbySearchMapView from '@/components/nearby-search-map-view';
 import TrendingResults from '@/components/trending-tv-movies-results';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import WeatherChart from '@/components/weather-chart';
 import { cn, getUserId, SearchGroupId } from '@/lib/utils';
-import { Wave } from "@foobar404/wave";
-import { CheckCircle, CurrencyDollar, Flag, Info, Memory, RoadHorizon, SoccerBall, TennisBall, XLogo, Clock as PhosphorClock, CalendarBlank } from '@phosphor-icons/react';
+import { Wave } from '@foobar404/wave';
+import {
+    CheckCircle,
+    CurrencyDollar,
+    Flag,
+    Info,
+    Memory,
+    RoadHorizon,
+    SoccerBall,
+    TennisBall,
+    XLogo,
+    Clock as PhosphorClock,
+    CalendarBlank,
+} from '@phosphor-icons/react';
 import { TextIcon } from '@radix-ui/react-icons';
 import { ToolInvocation } from 'ai';
 import { useChat, UseChatOptions } from '@ai-sdk/react';
@@ -80,56 +77,38 @@ import {
     RefreshCw,
     WrapText,
     ArrowLeftRight,
-    Mountain
+    Mountain,
+    Search,
 } from 'lucide-react';
 import Marked, { ReactRenderer } from 'marked-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { parseAsString, useQueryState } from 'nuqs';
-import React, {
-    memo,
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from 'react';
+import React, { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Latex from 'react-latex-next';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark, oneLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Tweet } from 'react-tweet';
 import { toast } from 'sonner';
-import {
-    generateSpeech,
-    suggestQuestions
-} from './actions';
+import { generateSpeech, suggestQuestions } from './actions';
 import InteractiveStockChart from '@/components/interactive-stock-chart';
 import { CurrencyConverter } from '@/components/currency_conv';
 import { ReasoningUIPart, ToolInvocationUIPart, TextUIPart, SourceUIPart } from '@ai-sdk/ui-utils';
-import {
-    Drawer,
-    DrawerContent,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import FormComponent from '@/components/ui/form-component';
-import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import ReasonSearch from '@/components/reason-search';
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from '@/components/ui/scroll-area';
 import MemoryManager from '@/components/memory-manager';
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { ImageIcon } from '@radix-ui/react-icons';
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import ReasonThinking from '@/components/reason-thinking';
+import UserInfoForm from '@/components/user-info-form';
 
 export const maxDuration = 120;
 
@@ -162,83 +141,70 @@ interface AcademicResult {
 const SearchLoadingState = ({
     icon: Icon,
     text,
-    color
+    color,
 }: {
-    icon: LucideIcon,
-    text: string,
-    color: "red" | "green" | "orange" | "violet" | "gray" | "blue"
+    icon: LucideIcon;
+    text: string;
+    color: 'red' | 'green' | 'orange' | 'violet' | 'gray' | 'blue';
 }) => {
     const colorVariants = {
         red: {
-            background: "bg-red-50 dark:bg-red-950",
-            border: "from-red-200 via-red-500 to-red-200 dark:from-red-400 dark:via-red-500 dark:to-red-700",
-            text: "text-red-500",
-            icon: "text-red-500"
+            background: 'bg-red-50 dark:bg-red-950',
+            border: 'from-red-200 via-red-500 to-red-200 dark:from-red-400 dark:via-red-500 dark:to-red-700',
+            text: 'text-red-500',
+            icon: 'text-red-500',
         },
         green: {
-            background: "bg-green-50 dark:bg-green-950",
-            border: "from-green-200 via-green-500 to-green-200 dark:from-green-400 dark:via-green-500 dark:to-green-700",
-            text: "text-green-500",
-            icon: "text-green-500"
+            background: 'bg-green-50 dark:bg-green-950',
+            border: 'from-green-200 via-green-500 to-green-200 dark:from-green-400 dark:via-green-500 dark:to-green-700',
+            text: 'text-green-500',
+            icon: 'text-green-500',
         },
         orange: {
-            background: "bg-orange-50 dark:bg-orange-950",
-            border: "from-orange-200 via-orange-500 to-orange-200 dark:from-orange-400 dark:via-orange-500 dark:to-orange-700",
-            text: "text-orange-500",
-            icon: "text-orange-500"
+            background: 'bg-orange-50 dark:bg-orange-950',
+            border: 'from-orange-200 via-orange-500 to-orange-200 dark:from-orange-400 dark:via-orange-500 dark:to-orange-700',
+            text: 'text-orange-500',
+            icon: 'text-orange-500',
         },
         violet: {
-            background: "bg-violet-50 dark:bg-violet-950",
-            border: "from-violet-200 via-violet-500 to-violet-200 dark:from-violet-400 dark:via-violet-500 dark:to-violet-700",
-            text: "text-violet-500",
-            icon: "text-violet-500"
+            background: 'bg-violet-50 dark:bg-violet-950',
+            border: 'from-violet-200 via-violet-500 to-violet-200 dark:from-violet-400 dark:via-violet-500 dark:to-violet-700',
+            text: 'text-violet-500',
+            icon: 'text-violet-500',
         },
         gray: {
-            background: "bg-neutral-50 dark:bg-neutral-950",
-            border: "from-neutral-200 via-neutral-500 to-neutral-200 dark:from-neutral-400 dark:via-neutral-500 dark:to-neutral-700",
-            text: "text-neutral-500",
-            icon: "text-neutral-500"
+            background: 'bg-neutral-50 dark:bg-neutral-950',
+            border: 'from-neutral-200 via-neutral-500 to-neutral-200 dark:from-neutral-400 dark:via-neutral-500 dark:to-neutral-700',
+            text: 'text-neutral-500',
+            icon: 'text-neutral-500',
         },
         blue: {
-            background: "bg-blue-50 dark:bg-blue-950",
-            border: "from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700",
-            text: "text-blue-500",
-            icon: "text-blue-500"
-        }
+            background: 'bg-blue-50 dark:bg-blue-950',
+            border: 'from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700',
+            text: 'text-blue-500',
+            icon: 'text-blue-500',
+        },
     };
 
     const variant = colorVariants[color];
 
     return (
         <Card className="relative w-full h-[100px] my-4 overflow-hidden shadow-none">
-            <BorderTrail
-                className={cn(
-                    'bg-gradient-to-l',
-                    variant.border
-                )}
-                size={80}
-            />
+            <BorderTrail className={cn('bg-gradient-to-l', variant.border)} size={80} />
             <CardContent className="p-6">
                 <div className="relative flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "relative h-10 w-10 rounded-full flex items-center justify-center",
-                            variant.background
-                        )}>
-                            <BorderTrail
-                                className={cn(
-                                    "bg-gradient-to-l",
-                                    variant.border
-                                )}
-                                size={40}
-                            />
-                            <Icon className={cn("h-5 w-5", variant.icon)} />
+                        <div
+                            className={cn(
+                                'relative h-10 w-10 rounded-full flex items-center justify-center',
+                                variant.background,
+                            )}
+                        >
+                            <BorderTrail className={cn('bg-gradient-to-l', variant.border)} size={40} />
+                            <Icon className={cn('h-5 w-5', variant.icon)} />
                         </div>
                         <div className="space-y-2">
-                            <TextShimmer
-                                className="text-base font-medium"
-                                duration={2}
-                            >
+                            <TextShimmer className="text-base font-medium" duration={2}>
                                 {text}
                             </TextShimmer>
                             <div className="flex gap-2">
@@ -248,7 +214,7 @@ const SearchLoadingState = ({
                                         className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse"
                                         style={{
                                             width: `${Math.random() * 40 + 20}px`,
-                                            animationDelay: `${i * 0.2}s`
+                                            animationDelay: `${i * 0.2}s`,
                                         }}
                                     />
                                 ))}
@@ -295,19 +261,8 @@ interface YouTubeCardProps {
 
 const VercelIcon = ({ size = 16 }: { size: number }) => {
     return (
-        <svg
-            height={size}
-            strokeLinejoin="round"
-            viewBox="0 0 16 16"
-            width={size}
-            style={{ color: "currentcolor" }}
-        >
-            <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M8 1L16 15H0L8 1Z"
-                fill="currentColor"
-            ></path>
+        <svg height={size} strokeLinejoin="round" viewBox="0 0 16 16" width={size} style={{ color: 'currentcolor' }}>
+            <path fillRule="evenodd" clipRule="evenodd" d="M8 1L16 15H0L8 1Z" fill="currentColor"></path>
         </svg>
     );
 };
@@ -317,7 +272,7 @@ const IconMapping: Record<string, LucideIcon> = {
     default: Code,
     date: Calendar,
     calculation: Calculator,
-    output: FileText
+    output: FileText,
 };
 
 interface CollapsibleSectionProps {
@@ -329,14 +284,7 @@ interface CollapsibleSectionProps {
     status?: 'running' | 'completed';
 }
 
-function CollapsibleSection({
-    code,
-    output,
-    language = "plaintext",
-    title,
-    icon,
-    status,
-}: CollapsibleSectionProps) {
+function CollapsibleSection({ code, output, language = 'plaintext', title, icon, status }: CollapsibleSectionProps) {
     const [copied, setCopied] = React.useState(false);
     const [isExpanded, setIsExpanded] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState<'code' | 'output'>('code');
@@ -363,19 +311,17 @@ function CollapsibleSection({
                             <IconComponent className="h-4 w-4 text-primary" />
                         </div>
                     )}
-                    <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                        {title}
-                    </h3>
+                    <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{title}</h3>
                 </div>
                 <div className="flex items-center gap-2">
                     {status && (
                         <Badge
                             variant="secondary"
                             className={cn(
-                                "w-fit flex items-center gap-1.5 px-1.5 py-0.5 text-xs",
+                                'w-fit flex items-center gap-1.5 px-1.5 py-0.5 text-xs',
                                 status === 'running'
-                                    ? "bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                    : "bg-green-50/50 dark:bg-green-900/20 text-green-600 dark:text-green-400"
+                                    ? 'bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                    : 'bg-green-50/50 dark:bg-green-900/20 text-green-600 dark:text-green-400',
                             )}
                         >
                             {status === 'running' ? (
@@ -383,14 +329,11 @@ function CollapsibleSection({
                             ) : (
                                 <CheckCircle className="h-3 w-3" />
                             )}
-                            {status === 'running' ? "Running" : "Done"}
+                            {status === 'running' ? 'Running' : 'Done'}
                         </Badge>
                     )}
                     <ChevronDown
-                        className={cn(
-                            "h-4 w-4 transition-transform duration-200",
-                            !isExpanded && "-rotate-90"
-                        )}
+                        className={cn('h-4 w-4 transition-transform duration-200', !isExpanded && '-rotate-90')}
                     />
                 </div>
             </div>
@@ -400,10 +343,10 @@ function CollapsibleSection({
                     <div className="flex border-b border-neutral-200 dark:border-neutral-800">
                         <button
                             className={cn(
-                                "px-4 py-2 text-sm font-medium transition-colors",
+                                'px-4 py-2 text-sm font-medium transition-colors',
                                 activeTab === 'code'
-                                    ? "border-b-2 border-primary text-primary"
-                                    : "text-neutral-600 dark:text-neutral-400"
+                                    ? 'border-b-2 border-primary text-primary'
+                                    : 'text-neutral-600 dark:text-neutral-400',
                             )}
                             onClick={() => setActiveTab('code')}
                         >
@@ -412,10 +355,10 @@ function CollapsibleSection({
                         {output && (
                             <button
                                 className={cn(
-                                    "px-4 py-2 text-sm font-medium transition-colors",
+                                    'px-4 py-2 text-sm font-medium transition-colors',
                                     activeTab === 'output'
-                                        ? "border-b-2 border-primary text-primary"
-                                        : "text-neutral-600 dark:text-neutral-400"
+                                        ? 'border-b-2 border-primary text-primary'
+                                        : 'text-neutral-600 dark:text-neutral-400',
                                 )}
                                 onClick={() => setActiveTab('output')}
                             >
@@ -437,13 +380,10 @@ function CollapsibleSection({
                             </Button>
                         </div>
                     </div>
-                    <div className={cn(
-                        "text-sm",
-                        theme === "dark" ? "bg-[rgb(40,44,52)]" : "bg-[rgb(250,250,250)]"
-                    )}>
+                    <div className={cn('text-sm', theme === 'dark' ? 'bg-[rgb(40,44,52)]' : 'bg-[rgb(250,250,250)]')}>
                         <SyntaxHighlighter
                             language={activeTab === 'code' ? language : 'plaintext'}
-                            style={theme === "dark" ? oneDark : oneLight}
+                            style={theme === 'dark' ? oneDark : oneLight}
                             customStyle={{
                                 margin: 0,
                                 padding: '0.75rem 0 0 0',
@@ -462,11 +402,11 @@ function CollapsibleSection({
                                 marginRight: '1em',
                                 paddingRight: '0.5em',
                                 fontFamily: GeistMono.style.fontFamily,
-                                minWidth: '2em'
+                                minWidth: '2em',
                             }}
                             lineNumberContainerStyle={{
                                 backgroundColor: theme === 'dark' ? '#000000' : '#f5f5f5',
-                                float: 'left'
+                                float: 'left',
                             }}
                             wrapLongLines={false}
                             codeTagProps={{
@@ -475,8 +415,8 @@ function CollapsibleSection({
                                     fontSize: '0.85em',
                                     whiteSpace: 'pre',
                                     overflowWrap: 'normal',
-                                    wordBreak: 'keep-all'
-                                }
+                                    wordBreak: 'keep-all',
+                                },
                             }}
                         >
                             {activeTab === 'code' ? code : output || ''}
@@ -500,7 +440,7 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
             const [_, time, description] = match;
             return { time, description };
         }
-        return { time: "", description: timestamp };
+        return { time: '', description: timestamp };
     };
 
     // Prevent event propagation to allow scrolling during streaming
@@ -573,7 +513,7 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
                     )}
                 </div>
 
-                {(video.timestamps && video.timestamps?.length > 0 || video.captions) && (
+                {((video.timestamps && video.timestamps?.length > 0) || video.captions) && (
                     <div className="mt-1">
                         <Accordion type="single" collapsible>
                             <AccordionItem value="details" className="border-none">
@@ -585,7 +525,9 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
                                 <AccordionContent>
                                     {video.timestamps && video.timestamps.length > 0 && (
                                         <div className="mt-2 space-y-1.5">
-                                            <h4 className="text-xs font-semibold dark:text-neutral-300 text-neutral-700">Key Moments</h4>
+                                            <h4 className="text-xs font-semibold dark:text-neutral-300 text-neutral-700">
+                                                Key Moments
+                                            </h4>
                                             <ScrollArea className="h-[120px]">
                                                 <div className="pr-4">
                                                     {video.timestamps.map((timestamp, i) => {
@@ -593,21 +535,33 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
                                                         return (
                                                             <Link
                                                                 key={i}
-                                                                href={`${video.url}&t=${time.split(':').reduce((acc, time, i, arr) => {
-                                                                    if (arr.length === 2) { // MM:SS format
-                                                                        return i === 0 ? acc + parseInt(time) * 60 : acc + parseInt(time);
-                                                                    } else { // HH:MM:SS format
-                                                                        return i === 0 ? acc + parseInt(time) * 3600 :
-                                                                            i === 1 ? acc + parseInt(time) * 60 :
-                                                                                acc + parseInt(time);
-                                                                    }
-                                                                }, 0)}`}
+                                                                href={`${video.url}&t=${time
+                                                                    .split(':')
+                                                                    .reduce((acc, time, i, arr) => {
+                                                                        if (arr.length === 2) {
+                                                                            // MM:SS format
+                                                                            return i === 0
+                                                                                ? acc + parseInt(time) * 60
+                                                                                : acc + parseInt(time);
+                                                                        } else {
+                                                                            // HH:MM:SS format
+                                                                            return i === 0
+                                                                                ? acc + parseInt(time) * 3600
+                                                                                : i === 1
+                                                                                ? acc + parseInt(time) * 60
+                                                                                : acc + parseInt(time);
+                                                                        }
+                                                                    }, 0)}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="flex items-start gap-2 py-1 px-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                                                             >
-                                                                <span className="text-xs font-medium text-red-500 whitespace-nowrap">{time}</span>
-                                                                <span className="text-xs text-neutral-700 dark:text-neutral-300 line-clamp-1">{description}</span>
+                                                                <span className="text-xs font-medium text-red-500 whitespace-nowrap">
+                                                                    {time}
+                                                                </span>
+                                                                <span className="text-xs text-neutral-700 dark:text-neutral-300 line-clamp-1">
+                                                                    {description}
+                                                                </span>
                                                             </Link>
                                                         );
                                                     })}
@@ -618,12 +572,12 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
 
                                     {video.captions && (
                                         <div className="mt-3 space-y-1.5">
-                                            <h4 className="text-xs font-semibold dark:text-neutral-300 text-neutral-700">Transcript</h4>
+                                            <h4 className="text-xs font-semibold dark:text-neutral-300 text-neutral-700">
+                                                Transcript
+                                            </h4>
                                             <ScrollArea className="h-[120px]">
                                                 <div className="text-xs dark:text-neutral-400 text-neutral-600 rounded bg-neutral-50 dark:bg-neutral-800 p-2">
-                                                    <p className="whitespace-pre-wrap">
-                                                        {video.captions}
-                                                    </p>
+                                                    <p className="whitespace-pre-wrap">{video.captions}</p>
                                                 </div>
                                             </ScrollArea>
                                         </div>
@@ -650,14 +604,17 @@ const MemoizedYouTubeCard = React.memo(YouTubeCard, (prevProps, nextProps) => {
 });
 
 const HomeContent = () => {
-    const [query] = useQueryState('query', parseAsString.withDefault(''))
-    const [q] = useQueryState('q', parseAsString.withDefault(''))
-    const [model] = useQueryState('model', parseAsString.withDefault('scira-default'))
+    const [query] = useQueryState('query', parseAsString.withDefault(''));
+    const [q] = useQueryState('q', parseAsString.withDefault(''));
+    const [model] = useQueryState('model', parseAsString.withDefault('scira-default'));
 
-    const initialState = useMemo(() => ({
-        query: query || q,
-        model: model
-    }), [query, q, model]);
+    const initialState = useMemo(
+        () => ({
+            query: query || q,
+            model: model,
+        }),
+        [query, q, model],
+    );
 
     const lastSubmittedQueryRef = useRef(initialState.query);
     const [selectedModel, setSelectedModel] = useState(initialState.model);
@@ -677,53 +634,47 @@ const HomeContent = () => {
     // Get stored user ID
     const userId = useMemo(() => getUserId(), []);
 
-    const chatOptions: UseChatOptions = useMemo(() => ({
-        api: '/api/plan',
-        experimental_throttle: 500,
-        body: {
-            model: selectedModel,
-            group: selectedGroup,
-            user_id: userId,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        },
-        onFinish: async (message, { finishReason }) => {
-            console.log("[finish reason]:", finishReason);
-            if (message.content && (finishReason === 'stop' || finishReason === 'length')) {
-                const newHistory = [
-                    { role: "user", content: lastSubmittedQueryRef.current },
-                    { role: "assistant", content: message.content },
-                ];
-                const { questions } = await suggestQuestions(newHistory);
-                setSuggestedQuestions(questions);
-            }
-        },
-        onError: (error) => {
-            console.error("Chat error:", error.cause, error.message);
-            toast.error("An error occurred.", {
-                description: `Oops! An error occurred while processing your request. ${error.message}`,
-            });
-        },
-    }), [selectedModel, selectedGroup, userId]);
+    const chatOptions: UseChatOptions = useMemo(
+        () => ({
+            api: '/api/plan',
+            experimental_throttle: 500,
+            body: {
+                model: selectedModel,
+                group: selectedGroup,
+                user_id: userId,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            },
+            onFinish: async (message, { finishReason }) => {
+                console.log('[finish reason]:', finishReason);
+                if (message.content && (finishReason === 'stop' || finishReason === 'length')) {
+                    const newHistory = [
+                        { role: 'user', content: lastSubmittedQueryRef.current },
+                        { role: 'assistant', content: message.content },
+                    ];
+                    const { questions } = await suggestQuestions(newHistory);
+                    setSuggestedQuestions(questions);
+                }
+            },
+            onError: (error) => {
+                console.error('Chat error:', error.cause, error.message);
+                toast.error('An error occurred.', {
+                    description: `Oops! An error occurred while processing your request. ${error.message}`,
+                });
+            },
+        }),
+        [selectedModel, selectedGroup, userId],
+    );
 
-    const {
-        input,
-        messages,
-        setInput,
-        append,
-        handleSubmit,
-        setMessages,
-        reload,
-        stop,
-        status,
-    } = useChat(chatOptions);
+    const { input, messages, setInput, append, handleSubmit, setMessages, reload, stop, status, addToolResult } =
+        useChat(chatOptions);
 
     useEffect(() => {
         if (!initializedRef.current && initialState.query && !messages.length) {
             initializedRef.current = true;
-            console.log("[initial query]:", initialState.query);
+            console.log('[initial query]:', initialState.query);
             append({
                 content: initialState.query,
-                role: 'user'
+                role: 'user',
             });
         }
     }, [initialState.query, append, setInput, messages.length]);
@@ -745,7 +696,6 @@ const HomeContent = () => {
         );
     };
 
-
     const CopyButton = ({ text }: { text: string }) => {
         const [isCopied, setIsCopied] = useState(false);
 
@@ -760,15 +710,11 @@ const HomeContent = () => {
                     await navigator.clipboard.writeText(text);
                     setIsCopied(true);
                     setTimeout(() => setIsCopied(false), 2000);
-                    toast.success("Copied to clipboard");
+                    toast.success('Copied to clipboard');
                 }}
                 className="h-8 px-2 text-xs rounded-full"
             >
-                {isCopied ? (
-                    <Check className="h-4 w-4" />
-                ) : (
-                    <Copy className="h-4 w-4" />
-                )}
+                {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
         );
     };
@@ -801,19 +747,19 @@ const HomeContent = () => {
         // Process block equations
         processedContent = processedContent.replace(
             /___BLOCK_OPEN___([\s\S]*?)___BLOCK_CLOSE___/g,
-            (_, equation) => `$$${equation.trim()}$$`
+            (_, equation) => `$$${equation.trim()}$$`,
         );
 
         // Process inline equations
         processedContent = processedContent.replace(
             /___INLINE_OPEN___([\s\S]*?)___INLINE_CLOSE___/g,
-            (_, equation) => `$${equation.trim()}$`
+            (_, equation) => `$${equation.trim()}$`,
         );
 
         // Handle common LaTeX expressions not wrapped in delimiters
         processedContent = processedContent.replace(
-            /(\b[A-Z](?:_\{[^{}]+\}|\^[^{}]+|_[a-zA-Z\d]|\^[a-zA-Z\d])+)/g, 
-            (match) => `$${match}$`
+            /(\b[A-Z](?:_\{[^{}]+\}|\^[^{}]+|_[a-zA-Z\d]|\^[a-zA-Z\d])+)/g,
+            (match) => `$${match}$`,
         );
 
         // Handle any remaining escaped delimiters that weren't part of a complete pair
@@ -829,7 +775,7 @@ const HomeContent = () => {
     const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         const citationLinks = useMemo<CitationLink[]>(() => {
             // Improved regex to better handle various markdown link formats
-            return Array.from(content.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)).map(match => {
+            return Array.from(content.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)).map((match) => {
                 const text = match[1]?.trim() || '';
                 const link = match[2]?.trim() || '';
                 return { text, link };
@@ -853,7 +799,7 @@ const HomeContent = () => {
             }, [children]);
 
             const toggleWrap = useCallback(() => {
-                setIsWrapped(prev => !prev);
+                setIsWrapped((prev) => !prev);
             }, []);
 
             return (
@@ -894,7 +840,11 @@ const HomeContent = () => {
                                       px-2 py-1
                                       rounded text-xs font-medium
                                       transition-all duration-200
-                                      ${isCopied ? 'text-primary dark:text-primary' : 'text-neutral-500 dark:text-neutral-400'}
+                                      ${
+                                          isCopied
+                                              ? 'text-primary dark:text-primary'
+                                              : 'text-neutral-500 dark:text-neutral-400'
+                                      }
                                       hover:bg-neutral-200 dark:hover:bg-neutral-700
                                       flex items-center gap-1.5
                                     `}
@@ -935,11 +885,11 @@ const HomeContent = () => {
                                 marginRight: '1em',
                                 paddingRight: '0.5em',
                                 fontFamily: GeistMono.style.fontFamily,
-                                minWidth: '2em'
+                                minWidth: '2em',
                             }}
                             lineNumberContainerStyle={{
                                 backgroundColor: theme === 'dark' ? '#171717' : '#f5f5f5',
-                                float: 'left'
+                                float: 'left',
                             }}
                             wrapLongLines={isWrapped}
                             codeTagProps={{
@@ -948,8 +898,8 @@ const HomeContent = () => {
                                     fontSize: '0.85em',
                                     whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
                                     overflowWrap: isWrapped ? 'break-word' : 'normal',
-                                    wordBreak: isWrapped ? 'break-word' : 'keep-all'
-                                }
+                                    wordBreak: isWrapped ? 'break-word' : 'keep-all',
+                                },
                             }}
                         >
                             {children}
@@ -961,7 +911,7 @@ const HomeContent = () => {
 
         CodeBlock.displayName = 'CodeBlock';
 
-        const LinkPreview = ({ href, title }: { href: string, title?: string }) => {
+        const LinkPreview = ({ href, title }: { href: string; title?: string }) => {
             const domain = new URL(href).hostname;
 
             return (
@@ -987,9 +937,14 @@ const HomeContent = () => {
             );
         };
 
-        const renderHoverCard = (href: string, text: React.ReactNode, isCitation: boolean = false, citationText?: string) => {
+        const renderHoverCard = (
+            href: string,
+            text: React.ReactNode,
+            isCitation: boolean = false,
+            citationText?: string,
+        ) => {
             const title = citationText || (typeof text === 'string' ? text : '');
-            
+
             return (
                 <HoverCard openDelay={10}>
                     <HoverCardTrigger asChild>
@@ -997,9 +952,11 @@ const HomeContent = () => {
                             href={href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={isCitation
-                                ? "cursor-pointer text-xs text-primary py-0.5 px-1.5 m-0 bg-primary/10 dark:bg-primary/20 rounded-full no-underline font-medium"
-                                : "text-primary dark:text-primary-light no-underline hover:underline font-medium"}
+                            className={
+                                isCitation
+                                    ? 'cursor-pointer text-xs text-primary py-0.5 px-1.5 m-0 bg-primary/10 dark:bg-primary/20 rounded-full no-underline font-medium'
+                                    : 'text-primary dark:text-primary-light no-underline hover:underline font-medium'
+                            }
                         >
                             {text}
                         </Link>
@@ -1018,7 +975,7 @@ const HomeContent = () => {
 
         const generateKey = () => {
             return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        }
+        };
 
         const renderer: Partial<ReactRenderer> = {
             text(text: string) {
@@ -1027,7 +984,7 @@ const HomeContent = () => {
                     <Latex
                         delimiters={[
                             { left: '$$', right: '$$', display: true },
-                            { left: '$', right: '$', display: false }
+                            { left: '$', right: '$', display: false },
                         ]}
                         key={generateKey()}
                     >
@@ -1042,7 +999,7 @@ const HomeContent = () => {
                             <Latex
                                 delimiters={[
                                     { left: '$$', right: '$$', display: true },
-                                    { left: '$', right: '$', display: false }
+                                    { left: '$', right: '$', display: false },
                                 ]}
                                 key={generateKey()}
                             >
@@ -1054,33 +1011,40 @@ const HomeContent = () => {
                 return <p className="my-5 leading-relaxed text-neutral-700 dark:text-neutral-300">{children}</p>;
             },
             code(children, language) {
-                return <CodeBlock language={language} key={generateKey()}>{String(children)}</CodeBlock>;
+                return (
+                    <CodeBlock language={language} key={generateKey()}>
+                        {String(children)}
+                    </CodeBlock>
+                );
             },
             link(href, text) {
-                const citationIndex = citationLinks.findIndex(link => link.link === href);
+                const citationIndex = citationLinks.findIndex((link) => link.link === href);
                 if (citationIndex !== -1) {
                     // For citations, show the citation text in the hover card
                     const citationText = citationLinks[citationIndex].text;
                     return (
-                        <sup key={generateKey()}>
-                            {renderHoverCard(href, citationIndex + 1, true, citationText)}
-                        </sup>
+                        <sup key={generateKey()}>{renderHoverCard(href, citationIndex + 1, true, citationText)}</sup>
                     );
                 }
-                return isValidUrl(href)
-                    ? renderHoverCard(href, text)
-                    : <a href={href} className="text-primary dark:text-primary-light hover:underline font-medium">{text}</a>;
+                return isValidUrl(href) ? (
+                    renderHoverCard(href, text)
+                ) : (
+                    <a href={href} className="text-primary dark:text-primary-light hover:underline font-medium">
+                        {text}
+                    </a>
+                );
             },
             heading(children, level) {
                 const HeadingTag = `h${level}` as keyof JSX.IntrinsicElements;
-                const sizeClasses = {
-                    1: "text-2xl md:text-3xl font-extrabold mt-8 mb-4",
-                    2: "text-xl md:text-2xl font-bold mt-7 mb-3",
-                    3: "text-lg md:text-xl font-semibold mt-6 mb-3",
-                    4: "text-base md:text-lg font-medium mt-5 mb-2",
-                    5: "text-sm md:text-base font-medium mt-4 mb-2",
-                    6: "text-xs md:text-sm font-medium mt-4 mb-2",
-                }[level] || "";
+                const sizeClasses =
+                    {
+                        1: 'text-2xl md:text-3xl font-extrabold mt-8 mb-4',
+                        2: 'text-xl md:text-2xl font-bold mt-7 mb-3',
+                        3: 'text-lg md:text-xl font-semibold mt-6 mb-3',
+                        4: 'text-base md:text-lg font-medium mt-5 mb-2',
+                        5: 'text-sm md:text-base font-medium mt-4 mb-2',
+                        6: 'text-xs md:text-sm font-medium mt-4 mb-2',
+                    }[level] || '';
 
                 return (
                     <HeadingTag className={`${sizeClasses} text-neutral-900 dark:text-neutral-50 tracking-tight`}>
@@ -1091,7 +1055,11 @@ const HomeContent = () => {
             list(children, ordered) {
                 const ListTag = ordered ? 'ol' : 'ul';
                 return (
-                    <ListTag className={`my-5 pl-6 space-y-2 text-neutral-700 dark:text-neutral-300 ${ordered ? 'list-decimal' : 'list-disc'}`}>
+                    <ListTag
+                        className={`my-5 pl-6 space-y-2 text-neutral-700 dark:text-neutral-300 ${
+                            ordered ? 'list-decimal' : 'list-disc'
+                        }`}
+                    >
                         {children}
                     </ListTag>
                 );
@@ -1110,9 +1078,7 @@ const HomeContent = () => {
                 return (
                     <div className="w-full my-8 overflow-hidden">
                         <div className="overflow-x-auto rounded-sm border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
-                            <table className="w-full border-collapse text-sm m-0">
-                                {children}
-                            </table>
+                            <table className="w-full border-collapse text-sm m-0">{children}</table>
                         </div>
                     </div>
                 );
@@ -1129,49 +1095,42 @@ const HomeContent = () => {
                 const isHeader = flags.header;
 
                 return isHeader ? (
-                    <th className={cn(
-                        "px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100",
-                        "bg-neutral-100/80 dark:bg-neutral-800/80",
-                        "first:pl-6 last:pr-6",
-                        align
-                    )}>
+                    <th
+                        className={cn(
+                            'px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100',
+                            'bg-neutral-100/80 dark:bg-neutral-800/80',
+                            'first:pl-6 last:pr-6',
+                            align,
+                        )}
+                    >
                         {children}
                     </th>
                 ) : (
-                    <td className={cn(
-                        "px-4 py-3 text-neutral-700 dark:text-neutral-300",
-                        "first:pl-6 last:pr-6",
-                        align
-                    )}>
+                    <td
+                        className={cn(
+                            'px-4 py-3 text-neutral-700 dark:text-neutral-300',
+                            'first:pl-6 last:pr-6',
+                            align,
+                        )}
+                    >
                         {children}
                     </td>
                 );
             },
             tableHeader(children) {
-                return (
-                    <thead className="border-b border-neutral-200 dark:border-neutral-800">
-                        {children}
-                    </thead>
-                );
+                return <thead className="border-b border-neutral-200 dark:border-neutral-800">{children}</thead>;
             },
             tableBody(children) {
-                return (
-                    <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                        {children}
-                    </tbody>
-                );
+                return <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">{children}</tbody>;
             },
         };
 
         return (
             <div className="markdown-body prose prose-neutral dark:prose-invert max-w-none dark:text-neutral-200 font-sans">
-                <Marked renderer={renderer}>
-                    {content}
-                </Marked>
+                <Marked renderer={renderer}>{content}</Marked>
             </div>
         );
     };
-
 
     const lastUserMessageIndex = useMemo(() => {
         for (let i = messages.length - 1; i >= 0; i--) {
@@ -1189,7 +1148,7 @@ const HomeContent = () => {
             // Initial scroll to bottom when streaming starts
             if (bottomRef.current) {
                 isAutoScrollingRef.current = true;
-                bottomRef.current.scrollIntoView({ behavior: "smooth" });
+                bottomRef.current.scrollIntoView({ behavior: 'smooth' });
             }
         }
     }, [status]);
@@ -1218,7 +1177,7 @@ const HomeContent = () => {
         if (status === 'streaming' && !hasManuallyScrolled && bottomRef.current) {
             scrollTimeout = setTimeout(() => {
                 isAutoScrollingRef.current = true;
-                bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+                bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
                 // Reset auto-scroll flag after animation
                 setTimeout(() => {
                     isAutoScrollingRef.current = false;
@@ -1234,45 +1193,54 @@ const HomeContent = () => {
         };
     }, [messages, suggestedQuestions, status, hasManuallyScrolled]);
 
-    const handleSuggestedQuestionClick = useCallback(async (question: string) => {
-        setSuggestedQuestions([]);
-
-        await append({
-            content: question.trim(),
-            role: 'user'
-        });
-    }, [append]);
-
-    const handleMessageEdit = useCallback((index: number) => {
-        setIsEditingMessage(true);
-        setEditingMessageIndex(index);
-        setInput(messages[index].content);
-    }, [messages, setInput]);
-
-    const handleMessageUpdate = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (input.trim()) {
-            // Create new messages array up to the edited message
-            const newMessages = messages.slice(0, editingMessageIndex + 1);
-            // Update the edited message
-            newMessages[editingMessageIndex] = { ...newMessages[editingMessageIndex], content: input.trim() };
-            // Set the new messages array
-            setMessages(newMessages);
-            // Reset editing state
-            setIsEditingMessage(false);
-            setEditingMessageIndex(-1);
-            // Store the edited message for reference
-            lastSubmittedQueryRef.current = input.trim();
-            // Clear input
-            setInput('');
-            // Reset suggested questions
+    const handleSuggestedQuestionClick = useCallback(
+        async (question: string) => {
             setSuggestedQuestions([]);
-            // Trigger a new chat completion without appending
-            reload();
-        } else {
-            toast.error("Please enter a valid message.");
-        }
-    }, [input, messages, editingMessageIndex, setMessages, setInput, reload]);
+
+            await append({
+                content: question.trim(),
+                role: 'user',
+            });
+        },
+        [append],
+    );
+
+    const handleMessageEdit = useCallback(
+        (index: number) => {
+            setIsEditingMessage(true);
+            setEditingMessageIndex(index);
+            setInput(messages[index].content);
+        },
+        [messages, setInput],
+    );
+
+    const handleMessageUpdate = useCallback(
+        (e: React.FormEvent<HTMLFormElement>) => {
+            e.preventDefault();
+            if (input.trim()) {
+                // Create new messages array up to the edited message
+                const newMessages = messages.slice(0, editingMessageIndex + 1);
+                // Update the edited message
+                newMessages[editingMessageIndex] = { ...newMessages[editingMessageIndex], content: input.trim() };
+                // Set the new messages array
+                setMessages(newMessages);
+                // Reset editing state
+                setIsEditingMessage(false);
+                setEditingMessageIndex(-1);
+                // Store the edited message for reference
+                lastSubmittedQueryRef.current = input.trim();
+                // Clear input
+                setInput('');
+                // Reset suggested questions
+                setSuggestedQuestions([]);
+                // Trigger a new chat completion without appending
+                reload();
+            } else {
+                toast.error('Please enter a valid message.');
+            }
+        },
+        [input, messages, editingMessageIndex, setMessages, setInput, reload],
+    );
 
     const AboutButton = () => {
         return (
@@ -1288,15 +1256,19 @@ const HomeContent = () => {
         );
     };
 
-    interface NavbarProps { }
+    interface NavbarProps {}
 
     const Navbar: React.FC<NavbarProps> = () => {
         return (
-            <div className={cn(
-                "fixed top-0 left-0 right-0 z-[60] flex justify-between items-center p-4",
-                // Add opaque background only after submit
-                status === 'ready' ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" : "bg-background",
-            )}>
+            <div
+                className={cn(
+                    'fixed top-0 left-0 right-0 z-[60] flex justify-between items-center p-4',
+                    // Add opaque background only after submit
+                    status === 'ready'
+                        ? 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
+                        : 'bg-background',
+                )}
+            >
                 <div className="flex items-center gap-4">
                     <Link href="/new">
                         <Button
@@ -1311,7 +1283,7 @@ const HomeContent = () => {
                         </Button>
                     </Link>
                 </div>
-                <div className='flex items-center space-x-4'>
+                <div className="flex items-center space-x-4">
                     <Link
                         target="_blank"
                         href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzaidmukaddam%2Fscira&env=XAI_API_KEY,MISTRAL_API_KEY,COHERE_API_KEY,E2B_API_KEY,ELEVENLABS_API_KEY,TAVILY_API_KEY,EXA_API_KEY,TMDB_API_KEY,YT_ENDPOINT,FIRECRAWL_API_KEY,OPENWEATHER_API_KEY,SANDBOX_TEMPLATE_ID,GOOGLE_MAPS_API_KEY,MAPBOX_ACCESS_TOKEN,TRIPADVISOR_API_KEY,AVIATION_STACK_API_KEY,CRON_SECRET,BLOB_READ_WRITE_TOKEN,NEXT_PUBLIC_MAPBOX_TOKEN,NEXT_PUBLIC_POSTHOG_KEY,NEXT_PUBLIC_POSTHOG_HOST,NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,MEM0_API_KEY,MEM0_ORG_ID,MEM0_PROJECT_ID&envDescription=API%20keys%20and%20configuration%20required%20for%20Scira%20to%20function"
@@ -1321,8 +1293,8 @@ const HomeContent = () => {
                             transition-all duration-200"
                     >
                         <VercelIcon size={14} />
-                        <span className='hidden sm:block'>Deploy with Vercel</span>
-                        <span className='sm:hidden block'>Deploy</span>
+                        <span className="hidden sm:block">Deploy with Vercel</span>
+                        <span className="sm:hidden block">Deploy</span>
                     </Link>
                     <AboutButton />
                     <ThemeToggle />
@@ -1339,7 +1311,6 @@ const HomeContent = () => {
         setSuggestedQuestions([]);
     }, []);
 
-
     const memoizedMessages = useMemo(() => {
         // Create a shallow copy
         const msgs = [...messages];
@@ -1351,12 +1322,14 @@ const HomeContent = () => {
             // For assistant messages
             if (message.role === 'assistant') {
                 // Keep messages that have tool invocations
-                if (message.parts?.some(part => part.type === 'tool-invocation')) {
+                if (message.parts?.some((part) => part.type === 'tool-invocation')) {
                     return true;
                 }
                 // Keep messages that have text parts but no tool invocations
-                if (message.parts?.some(part => part.type === 'text') ||
-                    !message.parts?.some(part => part.type === 'tool-invocation')) {
+                if (
+                    message.parts?.some((part) => part.type === 'text') ||
+                    !message.parts?.some((part) => part.type === 'tool-invocation')
+                ) {
                     return true;
                 }
                 return false;
@@ -1370,11 +1343,11 @@ const HomeContent = () => {
 
     const handleRegenerate = useCallback(async () => {
         if (status !== 'ready') {
-            toast.error("Please wait for the current response to complete!");
+            toast.error('Please wait for the current response to complete!');
             return;
         }
 
-        const lastUserMessage = messages.findLast(m => m.role === 'user');
+        const lastUserMessage = messages.findLast((m) => m.role === 'user');
         if (!lastUserMessage) return;
 
         // Remove the last assistant message
@@ -1397,21 +1370,32 @@ const HomeContent = () => {
         parts: MessagePart[],
         message: any,
     ) => {
-        if (part.type === "text" && partIndex === 0 &&
-            parts.some((p, i) => i > partIndex && p.type === 'tool-invocation')) {
+        if (
+            part.type === 'text' &&
+            partIndex === 0 &&
+            parts.some((p, i) => i > partIndex && p.type === 'tool-invocation')
+        ) {
             return null;
         }
 
         switch (part.type) {
-            case "text":
-                if (part.text.trim() === "" || part.text === null || part.text === undefined || !part.text) {
+            case 'text':
+                if (part.text.trim() === '' || part.text === null || part.text === undefined || !part.text) {
                     return null;
                 }
                 return (
                     <div key={`${messageIndex}-${partIndex}-text`}>
                         <div className="flex items-center justify-between mt-5 mb-2">
                             <div className="flex items-center gap-2">
-                                <Image src="/scira.png" alt="Scira" className='size-6 invert-0 dark:invert' width={100} height={100} unoptimized quality={100} />
+                                <Image
+                                    src="/scira.png"
+                                    alt="Scira"
+                                    className="size-6 invert-0 dark:invert"
+                                    width={100}
+                                    height={100}
+                                    unoptimized
+                                    quality={100}
+                                />
                                 <h2 className="text-lg font-semibold font-syne text-neutral-800 dark:text-neutral-200">
                                     Scira AI
                                 </h2>
@@ -1433,9 +1417,9 @@ const HomeContent = () => {
                         <MarkdownRenderer content={preprocessLaTeX(part.text)} />
                     </div>
                 );
-            case "reasoning": {
+            case 'reasoning': {
                 const sectionKey = `${messageIndex}-${partIndex}`;
-                const isComplete = parts[partIndex + 1]?.type === "text";
+                const isComplete = parts[partIndex + 1]?.type === 'text';
                 const timing = reasoningTimings[sectionKey];
                 const duration = timing?.endTime ? ((timing.endTime - timing.startTime) / 1000).toFixed(1) : null;
 
@@ -1447,16 +1431,18 @@ const HomeContent = () => {
                     >
                         <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
                             <button
-                                onClick={() => setReasoningVisibilityMap(prev => ({
-                                    ...prev,
-                                    [sectionKey]: !prev[sectionKey]
-                                }))}
+                                onClick={() =>
+                                    setReasoningVisibilityMap((prev) => ({
+                                        ...prev,
+                                        [sectionKey]: !prev[sectionKey],
+                                    }))
+                                }
                                 className={cn(
-                                    "w-full flex items-center justify-between px-4 py-3",
-                                    "bg-neutral-50 dark:bg-neutral-900",
-                                    "hover:bg-neutral-100 dark:hover:bg-neutral-800",
-                                    "transition-colors duration-200",
-                                    "group text-left"
+                                    'w-full flex items-center justify-between px-4 py-3',
+                                    'bg-neutral-50 dark:bg-neutral-900',
+                                    'hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                                    'transition-colors duration-200',
+                                    'group text-left',
                                 )}
                             >
                                 <div className="flex items-center gap-3">
@@ -1477,7 +1463,7 @@ const HomeContent = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                                            {isComplete ? "Reasoned" : "Reasoning"}
+                                            {isComplete ? 'Reasoned' : 'Reasoning'}
                                         </span>
                                         {duration && (
                                             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800">
@@ -1511,8 +1497,8 @@ const HomeContent = () => {
                                     )}
                                     <ChevronDown
                                         className={cn(
-                                            "size-4 text-neutral-400 transition-transform duration-200",
-                                            reasoningVisibilityMap[sectionKey] ? "rotate-180" : ""
+                                            'size-4 text-neutral-400 transition-transform duration-200',
+                                            reasoningVisibilityMap[sectionKey] ? 'rotate-180' : '',
                                         )}
                                     />
                                 </div>
@@ -1522,17 +1508,19 @@ const HomeContent = () => {
                                 {reasoningVisibilityMap[sectionKey] && (
                                     <motion.div
                                         initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
+                                        animate={{ opacity: 1, height: 'auto' }}
                                         exit={{ opacity: 0, height: 0 }}
                                         transition={{ duration: 0.2 }}
                                         className="overflow-hidden border-t border-neutral-200 dark:border-neutral-800"
                                     >
                                         <div className="p-4 bg-white dark:bg-neutral-900">
-                                            <div className={cn(
-                                                "text-sm text-neutral-600 dark:text-neutral-400",
-                                                "prose prose-neutral dark:prose-invert max-w-none",
-                                                "prose-p:my-2 prose-p:leading-relaxed"
-                                            )}>
+                                            <div
+                                                className={cn(
+                                                    'text-sm text-neutral-600 dark:text-neutral-400',
+                                                    'prose prose-neutral dark:prose-invert max-w-none',
+                                                    'prose-p:my-2 prose-p:leading-relaxed',
+                                                )}
+                                            >
                                                 {part.details ? (
                                                     <div className="whitespace-pre-wrap">
                                                         {part.details.map((detail, detailIndex) => (
@@ -1552,7 +1540,9 @@ const HomeContent = () => {
                                                         {part.reasoning}
                                                     </div>
                                                 ) : (
-                                                    <div className="text-neutral-500 italic">No reasoning details available</div>
+                                                    <div className="text-neutral-500 italic">
+                                                        No reasoning details available
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -1563,12 +1553,13 @@ const HomeContent = () => {
                     </motion.div>
                 );
             }
-            case "tool-invocation":
+            case 'tool-invocation':
                 return (
                     <ToolInvocationListView
                         key={`${messageIndex}-${partIndex}-tool`}
                         toolInvocations={[part.toolInvocation]}
                         message={message}
+                        addToolResult={addToolResult}
                     />
                 );
             default:
@@ -1589,8 +1580,7 @@ const HomeContent = () => {
 
     // Update live elapsed time for active reasoning sections
     useEffect(() => {
-        const activeReasoningSections = Object.entries(reasoningTimings)
-            .filter(([_, timing]) => !timing.endTime);
+        const activeReasoningSections = Object.entries(reasoningTimings).filter(([_, timing]) => !timing.endTime);
 
         if (activeReasoningSections.length === 0) return;
 
@@ -1602,9 +1592,9 @@ const HomeContent = () => {
                 updatedTimes[key] = (now - timing.startTime) / 1000;
             });
 
-            setLiveElapsedTimes(prev => ({
+            setLiveElapsedTimes((prev) => ({
                 ...prev,
-                ...updatedTimes
+                ...updatedTimes,
             }));
         }, 100);
 
@@ -1614,22 +1604,22 @@ const HomeContent = () => {
     useEffect(() => {
         messages.forEach((message, messageIndex) => {
             message.parts?.forEach((part, partIndex) => {
-                if (part.type === "reasoning") {
+                if (part.type === 'reasoning') {
                     const sectionKey = `${messageIndex}-${partIndex}`;
-                    const isComplete = message.parts[partIndex + 1]?.type === "text";
+                    const isComplete = message.parts[partIndex + 1]?.type === 'text';
 
                     if (!reasoningTimings[sectionKey]) {
-                        setReasoningTimings(prev => ({
+                        setReasoningTimings((prev) => ({
                             ...prev,
-                            [sectionKey]: { startTime: Date.now() }
+                            [sectionKey]: { startTime: Date.now() },
                         }));
                     } else if (isComplete && !reasoningTimings[sectionKey].endTime) {
-                        setReasoningTimings(prev => ({
+                        setReasoningTimings((prev) => ({
                             ...prev,
                             [sectionKey]: {
                                 ...prev[sectionKey],
-                                endTime: Date.now()
-                            }
+                                endTime: Date.now(),
+                            },
                         }));
                     }
                 }
@@ -1672,14 +1662,14 @@ const HomeContent = () => {
             weekday: 'short',
             month: 'short',
             day: 'numeric',
-            timeZone: timezone
+            timeZone: timezone,
         });
 
         const timeFormatter = new Intl.DateTimeFormat('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: true,
-            timeZone: timezone
+            timeZone: timezone,
         });
 
         const formattedDate = dateFormatter.format(currentTime);
@@ -1690,7 +1680,7 @@ const HomeContent = () => {
 
             append({
                 content: `What's the current date and time?`,
-                role: 'user'
+                role: 'user',
             });
 
             lastSubmittedQueryRef.current = `What's the current date and time?`;
@@ -1706,7 +1696,10 @@ const HomeContent = () => {
                         className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:shadow-sm transition-all h-auto"
                         onClick={handleDateTimeClick}
                     >
-                        <PhosphorClock weight="duotone" className="h-5 w-5 text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                        <PhosphorClock
+                            weight="duotone"
+                            className="h-5 w-5 text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform"
+                        />
                         <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
                             {formattedTime}
                         </span>
@@ -1718,7 +1711,10 @@ const HomeContent = () => {
                         className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:shadow-sm transition-all h-auto"
                         onClick={handleDateTimeClick}
                     >
-                        <CalendarBlank weight="duotone" className="h-5 w-5 text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                        <CalendarBlank
+                            weight="duotone"
+                            className="h-5 w-5 text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform"
+                        />
                         <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
                             {formattedDate}
                         </span>
@@ -1734,11 +1730,16 @@ const HomeContent = () => {
         <div className="flex flex-col !font-sans items-center min-h-screen bg-background text-foreground transition-all duration-500">
             <Navbar />
 
-            <div className={`w-full p-2 sm:p-4 ${status === 'ready' && messages.length === 0
-                ? 'min-h-screen flex flex-col items-center justify-center' // Center everything when no messages
-                : 'mt-20 sm:mt-16' // Add top margin when showing messages
-                }`}>
-                <div className={`w-full max-w-[90%] !font-sans sm:max-w-2xl space-y-6 p-0 mx-auto transition-all duration-300`}>
+            <div
+                className={`w-full p-2 sm:p-4 ${
+                    status === 'ready' && messages.length === 0
+                        ? 'min-h-screen flex flex-col items-center justify-center' // Center everything when no messages
+                        : 'mt-20 sm:mt-16' // Add top margin when showing messages
+                }`}
+            >
+                <div
+                    className={`w-full max-w-[90%] !font-sans sm:max-w-2xl space-y-6 p-0 mx-auto transition-all duration-300`}
+                >
                     {status === 'ready' && messages.length === 0 && (
                         <div className="text-center !font-sans">
                             <h1 className="text-2xl sm:text-4xl mb-6 text-neutral-800 dark:text-neutral-100 font-syne">
@@ -1788,12 +1789,15 @@ const HomeContent = () => {
 
                     <div className="space-y-4 sm:space-y-6 mb-32">
                         {memoizedMessages.map((message, index) => (
-                            <div key={index} className={`${
-                                // Add border only if this is an assistant message AND there's a next message
-                                message.role === 'assistant' && index < memoizedMessages.length - 1
-                                    ? '!mb-12 border-b border-neutral-200 dark:border-neutral-800'
-                                    : ''
-                                }`.trim()}>
+                            <div
+                                key={index}
+                                className={`${
+                                    // Add border only if this is an assistant message AND there's a next message
+                                    message.role === 'assistant' && index < memoizedMessages.length - 1
+                                        ? '!mb-12 border-b border-neutral-200 dark:border-neutral-800'
+                                        : ''
+                                }`.trim()}
+                            >
                                 {message.role === 'user' && (
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
@@ -1820,17 +1824,24 @@ const HomeContent = () => {
                                                                         setInput('');
                                                                     }}
                                                                     className="h-7 w-7 !rounded-l-lg !rounded-r-none text-neutral-500 dark:text-neutral-400 hover:text-primary"
-                                                                    disabled={status === 'submitted' || status === 'streaming'}
+                                                                    disabled={
+                                                                        status === 'submitted' || status === 'streaming'
+                                                                    }
                                                                 >
                                                                     <X className="h-4 w-4" />
                                                                 </Button>
-                                                                <Separator orientation="vertical" className="h-7 bg-neutral-200 dark:bg-neutral-700" />
+                                                                <Separator
+                                                                    orientation="vertical"
+                                                                    className="h-7 bg-neutral-200 dark:bg-neutral-700"
+                                                                />
                                                                 <Button
                                                                     type="submit"
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="h-7 w-7 !rounded-r-lg !rounded-l-none text-neutral-500 dark:text-neutral-400 hover:text-primary"
-                                                                    disabled={status === 'submitted' || status === 'streaming'}
+                                                                    disabled={
+                                                                        status === 'submitted' || status === 'streaming'
+                                                                    }
                                                                 >
                                                                     <ArrowRight className="h-4 w-4" />
                                                                 </Button>
@@ -1860,7 +1871,9 @@ const HomeContent = () => {
                                                                     size="icon"
                                                                     onClick={() => handleMessageEdit(index)}
                                                                     className="h-7 w-7 !rounded-l-lg !rounded-r-none text-neutral-500 dark:text-neutral-400 hover:text-primary"
-                                                                    disabled={status === 'submitted' || status === 'streaming'}
+                                                                    disabled={
+                                                                        status === 'submitted' || status === 'streaming'
+                                                                    }
                                                                 >
                                                                     <svg
                                                                         width="15"
@@ -1884,7 +1897,7 @@ const HomeContent = () => {
                                                                     size="icon"
                                                                     onClick={() => {
                                                                         navigator.clipboard.writeText(message.content);
-                                                                        toast.success("Copied to clipboard");
+                                                                        toast.success('Copied to clipboard');
                                                                     }}
                                                                     className="h-7 w-7 !rounded-r-lg !rounded-l-none text-neutral-500 dark:text-neutral-400 hover:text-primary"
                                                                 >
@@ -1893,9 +1906,12 @@ const HomeContent = () => {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    {message.experimental_attachments && message.experimental_attachments.length > 0 && (
-                                                        <AttachmentsBadge attachments={message.experimental_attachments} />
-                                                    )}
+                                                    {message.experimental_attachments &&
+                                                        message.experimental_attachments.length > 0 && (
+                                                            <AttachmentsBadge
+                                                                attachments={message.experimental_attachments}
+                                                            />
+                                                        )}
                                                 </div>
                                             )}
                                         </div>
@@ -1911,9 +1927,9 @@ const HomeContent = () => {
                                                 partIndex,
                                                 message.parts as MessagePart[],
                                                 message,
-                                            )
+                                            ),
                                         )}
-                                        
+
                                         {/* Add suggested questions if this is the last message and it's from the assistant */}
                                         {index === memoizedMessages.length - 1 && suggestedQuestions.length > 0 && (
                                             <motion.div
@@ -1925,7 +1941,9 @@ const HomeContent = () => {
                                             >
                                                 <div className="flex items-center gap-2 mb-4">
                                                     <AlignLeft className="w-5 h-5 text-primary" />
-                                                    <h2 className="font-semibold text-base text-neutral-800 dark:text-neutral-200">Suggested questions</h2>
+                                                    <h2 className="font-semibold text-base text-neutral-800 dark:text-neutral-200">
+                                                        Suggested questions
+                                                    </h2>
                                                 </div>
                                                 <div className="space-y-2 flex flex-col">
                                                     {suggestedQuestions.map((question, index) => (
@@ -1985,7 +2003,7 @@ const HomeContent = () => {
             </div>
         </div>
     );
-}
+};
 
 const LoadingFallback = () => (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900">
@@ -1995,42 +2013,74 @@ const LoadingFallback = () => (
                 <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
             </div>
 
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 animate-pulse">
-                Loading...
-            </p>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 animate-pulse">Loading...</p>
         </div>
     </div>
 );
 
 const ToolInvocationListView = memo(
-    ({ toolInvocations, message }: { toolInvocations: ToolInvocation[]; message: any }) => {
+    ({
+        toolInvocations,
+        message,
+        addToolResult,
+    }: {
+        toolInvocations: ToolInvocation[];
+        message: any;
+        addToolResult: ({ toolCallId, result }: { toolCallId: string; result: any }) => void;
+    }) => {
         const renderToolInvocation = useCallback(
             (toolInvocation: ToolInvocation, index: number) => {
                 const args = JSON.parse(JSON.stringify(toolInvocation.args));
                 const result = 'result' in toolInvocation ? JSON.parse(JSON.stringify(toolInvocation.result)) : null;
-                console.log('toolInvocation.toolName:', toolInvocation.toolName)
-                if (!result) {
-                    return <SearchLoadingState
-                        icon={Heart}
-                        text="思考中..."
-                        color="blue"
-                    />
-                }
+                console.log('toolInvocation.toolName:', toolInvocation.toolName);
                 if (toolInvocation.toolName === 'reason_thinking') {
-                    return <div>
-                        <p>
-                            {result.thinkingResult}
-                        </p>
-                    </div>
+                    if (!result) {
+                        return <SearchLoadingState icon={Heart} text="思考中..." color="blue" />;
+                    }
+                    return <ReasonThinking thinkingResult={result.thinkingResult} />;
+                }
+                if (toolInvocation.toolName === 'ask_user_info') {
+                    console.log(toolInvocation.args);
+                    const toolCallId = toolInvocation.toolCallId;
+                    if (args.announcement) {
+                        return (
+                            <div className="flex flex-col gap-2 border-b border-neutral-200 dark:border-neutral-800 p-4">
+                                <p>{args.announcement}</p>
+                                <UserInfoForm
+                                    onSubmit={(userInfoStr: string) => {
+                                        addToolResult({
+                                            toolCallId,
+                                            result: userInfoStr,
+                                        });
+                                    }}
+                                />
+                            </div>
+                        );
+                    }
+                }
+
+                if (toolInvocation.toolName === 'search_province_grade_details') {
+                    const { province, grade, subject } = args;
+                    console.log('province: ', province);
+                    console.log('grade: ', grade);
+                    console.log('subject: ', subject);
+                    if (!result) {
+                        return (
+                            <div>
+                                <p>
+                                正在搜索<span className="font-bold">{province}</span>的<span className="font-bold">{grade}</span>
+                                年级的<span className="font-bold">{subject}</span>资料
+                            </p>
+                                <SearchLoadingState icon={Search} text="搜索中..." color="blue" />
+                            </div>
+                        );
+                    }
+                    
                 }
 
                 if (toolInvocation.toolName === 'find_place') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={MapPin}
-                            text="Finding locations..."
-                            color="blue"
-                        />;
+                        return <SearchLoadingState icon={MapPin} text="Finding locations..." color="blue" />;
                     }
 
                     const { features } = result;
@@ -2073,13 +2123,15 @@ const ToolInvocationListView = memo(
                                         <div
                                             key={place.id || index}
                                             className={cn(
-                                                "p-4",
-                                                index !== features.length - 1 && "border-b border-neutral-200 dark:border-neutral-800"
+                                                'p-4',
+                                                index !== features.length - 1 &&
+                                                    'border-b border-neutral-200 dark:border-neutral-800',
                                             )}
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center">
-                                                    {place.feature_type === 'street_address' || place.feature_type === 'street' ? (
+                                                    {place.feature_type === 'street_address' ||
+                                                    place.feature_type === 'street' ? (
                                                         <RoadHorizon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                                     ) : place.feature_type === 'locality' ? (
                                                         <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -2112,7 +2164,7 @@ const ToolInvocationListView = memo(
                                                                     onClick={() => {
                                                                         const coords = `${place.geometry.coordinates[1]},${place.geometry.coordinates[0]}`;
                                                                         navigator.clipboard.writeText(coords);
-                                                                        toast.success("Coordinates copied!");
+                                                                        toast.success('Coordinates copied!');
                                                                     }}
                                                                     className="h-10 w-10"
                                                                 >
@@ -2155,11 +2207,13 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'movie_or_tv_search') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={Film}
-                            text="Discovering entertainment content..."
-                            color="violet"
-                        />;
+                        return (
+                            <SearchLoadingState
+                                icon={Film}
+                                text="Discovering entertainment content..."
+                                color="violet"
+                            />
+                        );
                     }
 
                     return <TMDBResult result={result} />;
@@ -2167,34 +2221,21 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'trending_movies') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={Film}
-                            text="Loading trending movies..."
-                            color="blue"
-                        />;
+                        return <SearchLoadingState icon={Film} text="Loading trending movies..." color="blue" />;
                     }
                     return <TrendingResults result={result} type="movie" />;
                 }
 
                 if (toolInvocation.toolName === 'trending_tv') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={Tv}
-                            text="Loading trending TV shows..."
-                            color="blue"
-                        />;
+                        return <SearchLoadingState icon={Tv} text="Loading trending TV shows..." color="blue" />;
                     }
                     return <TrendingResults result={result} type="tv" />;
                 }
 
-
                 if (toolInvocation.toolName === 'x_search') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={XLogo}
-                            text="Searching for latest news..."
-                            color="gray"
-                        />;
+                        return <SearchLoadingState icon={XLogo} text="Searching for latest news..." color="gray" />;
                     }
 
                     const PREVIEW_COUNT = 3;
@@ -2264,17 +2305,17 @@ const ToolInvocationListView = memo(
                                     <div className="hidden sm:block">
                                         <Sheet>
                                             <SheetTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className="gap-2 bg-white dark:bg-black"
-                                                >
+                                                <Button variant="outline" className="gap-2 bg-white dark:bg-black">
                                                     <XLogo className="h-4 w-4" />
                                                     Show all {result.length} tweets
                                                 </Button>
                                             </SheetTrigger>
-                                            <SheetContent side="right" className="w-full sm:max-w-[600px] overflow-y-auto !p-0 !z-[70]">
-                                                <SheetHeader className='!mt-5 !font-sans'>
-                                                    <SheetTitle className='text-center'>All Tweets</SheetTitle>
+                                            <SheetContent
+                                                side="right"
+                                                className="w-full sm:max-w-[600px] overflow-y-auto !p-0 !z-[70]"
+                                            >
+                                                <SheetHeader className="!mt-5 !font-sans">
+                                                    <SheetTitle className="text-center">All Tweets</SheetTitle>
                                                 </SheetHeader>
                                                 <FullTweetList />
                                             </SheetContent>
@@ -2284,10 +2325,7 @@ const ToolInvocationListView = memo(
                                     <div className="block sm:hidden">
                                         <Drawer>
                                             <DrawerTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className="gap-2 bg-white dark:bg-black"
-                                                >
+                                                <Button variant="outline" className="gap-2 bg-white dark:bg-black">
                                                     <XLogo className="h-4 w-4" />
                                                     Show all {result.length} tweets
                                                 </Button>
@@ -2310,20 +2348,14 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'youtube_search') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={YoutubeIcon}
-                            text="Searching YouTube videos..."
-                            color="red"
-                        />;
+                        return <SearchLoadingState icon={YoutubeIcon} text="Searching YouTube videos..." color="red" />;
                     }
 
                     const youtubeResult = result as YouTubeSearchResponse;
 
                     // Filter out videos with no meaningful content
-                    const filteredVideos = youtubeResult.results.filter(video =>
-                        (video.timestamps && video.timestamps.length > 0) ||
-                        video.captions ||
-                        video.summary
+                    const filteredVideos = youtubeResult.results.filter(
+                        (video) => (video.timestamps && video.timestamps.length > 0) || video.captions || video.summary,
                     );
 
                     // If no videos with content, show a message instead
@@ -2350,7 +2382,10 @@ const ToolInvocationListView = memo(
                     return (
                         <div className="w-full my-4">
                             <Accordion type="single" collapsible defaultValue="videos">
-                                <AccordionItem value="videos" className="border dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 shadow-sm">
+                                <AccordionItem
+                                    value="videos"
+                                    className="border dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 shadow-sm"
+                                >
                                     <AccordionTrigger className="px-4 py-3 hover:no-underline">
                                         <div className="flex items-center gap-3">
                                             <div className="flex items-center justify-center h-9 w-9 rounded-full bg-red-50 dark:bg-red-950/30">
@@ -2361,7 +2396,10 @@ const ToolInvocationListView = memo(
                                                     YouTube Results
                                                 </h2>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <Badge variant="secondary" className="px-2 py-0 h-5 text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="px-2 py-0 h-5 text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                                                    >
                                                         {filteredVideos.length} videos with content
                                                     </Badge>
                                                 </div>
@@ -2394,11 +2432,7 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'academic_search') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={Book}
-                            text="Searching academic papers..."
-                            color="violet"
-                        />;
+                        return <SearchLoadingState icon={Book} text="Searching academic papers..." color="violet" />;
                     }
 
                     return (
@@ -2410,7 +2444,9 @@ const ToolInvocationListView = memo(
                                     </div>
                                     <div>
                                         <CardTitle>Academic Papers</CardTitle>
-                                        <p className="text-sm text-muted-foreground">Found {result.results.length} papers</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Found {result.results.length} papers
+                                        </p>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -2437,11 +2473,10 @@ const ToolInvocationListView = memo(
                                                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-muted-foreground bg-neutral-100 dark:bg-neutral-800 rounded-md">
                                                                 <User2 className="h-3.5 w-3.5 text-violet-500" />
                                                                 <span className="line-clamp-1">
-                                                                    {paper.author.split(';')
-                                                                        .slice(0, 2)
-                                                                        .join(', ') +
-                                                                        (paper.author.split(';').length > 2 ? ' et al.' : '')
-                                                                    }
+                                                                    {paper.author.split(';').slice(0, 2).join(', ') +
+                                                                        (paper.author.split(';').length > 2
+                                                                            ? ' et al.'
+                                                                            : '')}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -2476,7 +2511,12 @@ const ToolInvocationListView = memo(
                                                         {paper.url.includes('arxiv.org') && (
                                                             <Button
                                                                 variant="ghost"
-                                                                onClick={() => window.open(paper.url.replace('abs', 'pdf'), '_blank')}
+                                                                onClick={() =>
+                                                                    window.open(
+                                                                        paper.url.replace('abs', 'pdf'),
+                                                                        '_blank',
+                                                                    )
+                                                                }
                                                                 className="bg-neutral-100 dark:bg-neutral-800 hover:bg-violet-100 dark:hover:bg-violet-900/20 hover:text-violet-600 dark:hover:text-violet-400 group/btn"
                                                             >
                                                                 <Download className="h-4 w-4 group-hover/btn:scale-110 transition-transform duration-300" />
@@ -2514,7 +2554,7 @@ const ToolInvocationListView = memo(
                                                 repeat: Infinity,
                                                 duration: 0.8,
                                                 delay: index * 0.2,
-                                                repeatType: "reverse",
+                                                repeatType: 'reverse',
                                             }}
                                         />
                                     ))}
@@ -2527,11 +2567,7 @@ const ToolInvocationListView = memo(
 
                     return (
                         <div className="my-4">
-                            <NearbySearchMapView
-                                center={result.center}
-                                places={result.results}
-                                type={args.type}
-                            />
+                            <NearbySearchMapView center={result.center} places={result.results} type={args.type} />
                         </div>
                     );
                 }
@@ -2540,9 +2576,11 @@ const ToolInvocationListView = memo(
                     if (!result) {
                         return (
                             <div className="flex items-center justify-between w-full">
-                                <div className='flex items-center gap-2'>
+                                <div className="flex items-center gap-2">
                                     <MapPin className="h-5 w-5 text-neutral-700 dark:text-neutral-300 animate-pulse" />
-                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">Searching places...</span>
+                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">
+                                        Searching places...
+                                    </span>
                                 </div>
                                 <motion.div className="flex space-x-1">
                                     {[0, 1, 2].map((index) => (
@@ -2555,7 +2593,7 @@ const ToolInvocationListView = memo(
                                                 repeat: Infinity,
                                                 duration: 0.8,
                                                 delay: index * 0.2,
-                                                repeatType: "reverse",
+                                                repeatType: 'reverse',
                                             }}
                                         />
                                     ))}
@@ -2572,7 +2610,7 @@ const ToolInvocationListView = memo(
                             places={result.results.map((place: any) => ({
                                 name: place.name,
                                 location: place.geometry.location,
-                                vicinity: place.formatted_address
+                                vicinity: place.formatted_address,
                             }))}
                         />
                     );
@@ -2584,7 +2622,9 @@ const ToolInvocationListView = memo(
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center gap-2">
                                     <Cloud className="h-5 w-5 text-neutral-700 dark:text-neutral-300 animate-pulse" />
-                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">Fetching weather data...</span>
+                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">
+                                        Fetching weather data...
+                                    </span>
                                 </div>
                                 <div className="flex space-x-1">
                                     {[0, 1, 2].map((index) => (
@@ -2597,7 +2637,7 @@ const ToolInvocationListView = memo(
                                                 repeat: Infinity,
                                                 duration: 0.8,
                                                 delay: index * 0.2,
-                                                repeatType: "reverse",
+                                                repeatType: 'reverse',
                                             }}
                                         />
                                     ))}
@@ -2618,18 +2658,15 @@ const ToolInvocationListView = memo(
                             <Badge
                                 variant="secondary"
                                 className={cn(
-                                    "w-fit flex items-center gap-3 px-4 py-2 rounded-full transition-colors duration-200",
+                                    'w-fit flex items-center gap-3 px-4 py-2 rounded-full transition-colors duration-200',
                                     !result
-                                        ? "bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                        : "bg-green-50/50 dark:bg-green-900/20 text-green-600 dark:text-green-400"
-                                )}>
+                                        ? 'bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                        : 'bg-green-50/50 dark:bg-green-900/20 text-green-600 dark:text-green-400',
+                                )}
+                            >
                                 <TrendingUpIcon className="h-4 w-4" />
                                 <span className="font-medium">{args.title}</span>
-                                {!result ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Check className="h-4 w-4" />
-                                )}
+                                {!result ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                             </Badge>
 
                             {result?.chart && (
@@ -2638,7 +2675,7 @@ const ToolInvocationListView = memo(
                                         title={args.title}
                                         chart={{
                                             ...result.chart,
-                                            x_scale: 'datetime'
+                                            x_scale: 'datetime',
                                         }}
                                         data={result.chart.elements}
                                         stock_symbols={args.stock_symbols}
@@ -2650,7 +2687,7 @@ const ToolInvocationListView = memo(
                     );
                 }
 
-                if (toolInvocation.toolName === "code_interpreter") {
+                if (toolInvocation.toolName === 'code_interpreter') {
                     return (
                         <div className="space-y-6">
                             <CollapsibleSection
@@ -2672,9 +2709,9 @@ const ToolInvocationListView = memo(
                 }
 
                 if (toolInvocation.toolName === 'reason_search') {
-                    const updates = message?.annotations?.filter((a: any) =>
-                        a.type === 'research_update'
-                    ).map((a: any) => a.data);
+                    const updates = message?.annotations
+                        ?.filter((a: any) => a.type === 'research_update')
+                        .map((a: any) => a.data);
                     return <ReasonSearch updates={updates || []} />;
                 }
 
@@ -2684,9 +2721,9 @@ const ToolInvocationListView = memo(
                             <MultiSearch
                                 result={result}
                                 args={args}
-                                annotations={message?.annotations?.filter(
-                                    (a: any) => a.type === 'query_completion'
-                                ) || []}
+                                annotations={
+                                    message?.annotations?.filter((a: any) => a.type === 'query_completion') || []
+                                }
                             />
                         </div>
                     );
@@ -2715,7 +2752,8 @@ const ToolInvocationListView = memo(
 
                     // Update the error message UI with better dark mode border visibility
                     if (result.error || (result.results && result.results[0] && result.results[0].error)) {
-                        const errorMessage = result.error || (result.results && result.results[0] && result.results[0].error);
+                        const errorMessage =
+                            result.error || (result.results && result.results[0] && result.results[0].error);
                         return (
                             <div className="border border-red-200 dark:border-red-500 rounded-xl my-4 p-4 bg-red-50 dark:bg-red-950/50">
                                 <div className="flex items-center gap-3">
@@ -2760,10 +2798,13 @@ const ToolInvocationListView = memo(
                                         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-lg" />
                                         <img
                                             className="h-5 w-5 absolute inset-0 m-auto"
-                                            src={`https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(result.results[0].url)}`}
+                                            src={`https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(
+                                                result.results[0].url,
+                                            )}`}
                                             alt=""
                                             onError={(e) => {
-                                                e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.938 11h3.965a8.008 8.008 0 0 0-5.648-6.667z' fill='rgba(128,128,128,0.5)'/%3E%3C/svg%3E";
+                                                e.currentTarget.src =
+                                                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.938 11h3.965a8.008 8.008 0 0 0-5.648-6.667z' fill='rgba(128,128,128,0.5)'/%3E%3C/svg%3E";
                                             }}
                                         />
                                     </div>
@@ -2803,7 +2844,9 @@ const ToolInvocationListView = memo(
                                     </summary>
                                     <div className="max-h-[50vh] overflow-y-auto p-4 bg-neutral-50/50 dark:bg-neutral-800/30">
                                         <div className="prose prose-neutral dark:prose-invert prose-sm max-w-none">
-                                            <ReactMarkdown>{result.results[0].content || 'No content available'}</ReactMarkdown>
+                                            <ReactMarkdown>
+                                                {result.results[0].content || 'No content available'}
+                                            </ReactMarkdown>
                                         </div>
                                     </div>
                                 </details>
@@ -2821,7 +2864,9 @@ const ToolInvocationListView = memo(
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center gap-2">
                                     <Plane className="h-5 w-5 text-neutral-700 dark:text-neutral-300 animate-pulse" />
-                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">Tracking flight...</span>
+                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">
+                                        Tracking flight...
+                                    </span>
                                 </div>
                                 <div className="flex space-x-1">
                                     {[0, 1, 2].map((index) => (
@@ -2834,7 +2879,7 @@ const ToolInvocationListView = memo(
                                                 repeat: Infinity,
                                                 duration: 0.8,
                                                 delay: index * 0.2,
-                                                repeatType: "reverse",
+                                                repeatType: 'reverse',
                                             }}
                                         />
                                     ))}
@@ -2845,9 +2890,7 @@ const ToolInvocationListView = memo(
 
                     if (result.error) {
                         return (
-                            <div className="text-red-500 dark:text-red-400">
-                                Error tracking flight: {result.error}
-                            </div>
+                            <div className="text-red-500 dark:text-red-400">Error tracking flight: {result.error}</div>
                         );
                     }
 
@@ -2907,15 +2950,15 @@ const ToolInvocationListView = memo(
                             minute: 'numeric',
                             second: 'numeric',
                             hour12: true,
-                            timeZone: timezone
+                            timeZone: timezone,
                         });
 
                         const formattedParts = formatter.formatToParts(time);
                         const timeParts = {
-                            hour: formattedParts.find(part => part.type === 'hour')?.value || '12',
-                            minute: formattedParts.find(part => part.type === 'minute')?.value || '00',
-                            second: formattedParts.find(part => part.type === 'second')?.value || '00',
-                            dayPeriod: formattedParts.find(part => part.type === 'dayPeriod')?.value || 'AM'
+                            hour: formattedParts.find((part) => part.type === 'hour')?.value || '12',
+                            minute: formattedParts.find((part) => part.type === 'minute')?.value || '00',
+                            second: formattedParts.find((part) => part.type === 'second')?.value || '00',
+                            dayPeriod: formattedParts.find((part) => part.type === 'dayPeriod')?.value || 'AM',
                         };
 
                         return (
@@ -2924,11 +2967,15 @@ const ToolInvocationListView = memo(
                                     <div className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tighter tabular-nums text-neutral-900 dark:text-white">
                                         {timeParts.hour.padStart(2, '0')}
                                     </div>
-                                    <div className="mx-1 sm:mx-2 text-4xl sm:text-5xl md:text-6xl font-light text-neutral-400 dark:text-neutral-500">:</div>
+                                    <div className="mx-1 sm:mx-2 text-4xl sm:text-5xl md:text-6xl font-light text-neutral-400 dark:text-neutral-500">
+                                        :
+                                    </div>
                                     <div className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tighter tabular-nums text-neutral-900 dark:text-white">
                                         {timeParts.minute.padStart(2, '0')}
                                     </div>
-                                    <div className="mx-1 sm:mx-2 text-4xl sm:text-5xl md:text-6xl font-light text-neutral-400 dark:text-neutral-500">:</div>
+                                    <div className="mx-1 sm:mx-2 text-4xl sm:text-5xl md:text-6xl font-light text-neutral-400 dark:text-neutral-500">
+                                        :
+                                    </div>
                                     <div className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tighter tabular-nums text-neutral-900 dark:text-white">
                                         {timeParts.second.padStart(2, '0')}
                                     </div>
@@ -2954,7 +3001,8 @@ const ToolInvocationListView = memo(
                                                 </h3>
                                                 <div className="bg-neutral-100 dark:bg-neutral-800 rounded-md px-2 py-1 text-xs text-neutral-600 dark:text-neutral-300 font-medium flex items-center gap-1.5">
                                                     <PhosphorClock weight="regular" className="h-3 w-3 text-blue-500" />
-                                                    {result.timezone || new Intl.DateTimeFormat().resolvedOptions().timeZone}
+                                                    {result.timezone ||
+                                                        new Intl.DateTimeFormat().resolvedOptions().timeZone}
                                                 </div>
                                             </div>
                                             <LiveClock />
@@ -2982,23 +3030,20 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'memory_manager') {
                     if (!result) {
-                        return (
-                            <SearchLoadingState
-                                icon={Memory}
-                                text="Managing memories..."
-                                color="violet"
-                            />
-                        );
+                        return <SearchLoadingState icon={Memory} text="Managing memories..." color="violet" />;
                     }
                     return <MemoryManager result={result} />;
                 }
 
                 return null;
             },
-            [message]
+            [message],
         );
 
-        const TranslationTool: React.FC<{ toolInvocation: ToolInvocation; result: any }> = ({ toolInvocation, result }) => {
+        const TranslationTool: React.FC<{ toolInvocation: ToolInvocation; result: any }> = ({
+            toolInvocation,
+            result,
+        }) => {
             const [isPlaying, setIsPlaying] = useState(false);
             const [audioUrl, setAudioUrl] = useState<string | null>(null);
             const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -3007,7 +3052,7 @@ const ToolInvocationListView = memo(
             const waveRef = useRef<Wave | null>(null);
 
             useEffect(() => {
-                const _audioRef = audioRef.current
+                const _audioRef = audioRef.current;
                 return () => {
                     if (_audioRef) {
                         _audioRef.pause();
@@ -3019,12 +3064,14 @@ const ToolInvocationListView = memo(
             useEffect(() => {
                 if (audioUrl && audioRef.current && canvasRef.current) {
                     waveRef.current = new Wave(audioRef.current, canvasRef.current);
-                    waveRef.current.addAnimation(new waveRef.current.animations.Lines({
-                        lineWidth: 1.5,
-                        lineColor: 'rgb(147, 51, 234)',
-                        count: 80,
-                        mirroredY: true,
-                    }));
+                    waveRef.current.addAnimation(
+                        new waveRef.current.animations.Lines({
+                            lineWidth: 1.5,
+                            lineColor: 'rgb(147, 51, 234)',
+                            count: 80,
+                            mirroredY: true,
+                        }),
+                    );
                 }
             }, [audioUrl]);
 
@@ -3043,7 +3090,7 @@ const ToolInvocationListView = memo(
                             }
                         }, 100);
                     } catch (error) {
-                        console.error("Error generating speech:", error);
+                        console.error('Error generating speech:', error);
                         setIsGeneratingAudio(false);
                     }
                 } else if (audioRef.current) {
@@ -3083,7 +3130,19 @@ const ToolInvocationListView = memo(
                         <div className="space-y-4 sm:space-y-6">
                             <div>
                                 <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                                    The phrase <span className="font-medium text-neutral-900 dark:text-neutral-100">{toolInvocation.args.text}</span> translates from <span className="font-medium text-neutral-900 dark:text-neutral-100">{result.detectedLanguage}</span> to <span className="font-medium text-neutral-900 dark:text-neutral-100">{toolInvocation.args.to}</span> as <span className="font-medium text-primary">{result.translatedText}</span>
+                                    The phrase{' '}
+                                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                                        {toolInvocation.args.text}
+                                    </span>{' '}
+                                    translates from{' '}
+                                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                                        {result.detectedLanguage}
+                                    </span>{' '}
+                                    to{' '}
+                                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                                        {toolInvocation.args.to}
+                                    </span>{' '}
+                                    as <span className="font-medium text-primary">{result.translatedText}</span>
                                 </p>
                             </div>
 
@@ -3121,7 +3180,10 @@ const ToolInvocationListView = memo(
                             src={audioUrl}
                             onPlay={() => setIsPlaying(true)}
                             onPause={() => setIsPlaying(false)}
-                            onEnded={() => { setIsPlaying(false); handleReset(); }}
+                            onEnded={() => {
+                                setIsPlaying(false);
+                                handleReset();
+                            }}
                         />
                     )}
                 </Card>
@@ -3130,20 +3192,15 @@ const ToolInvocationListView = memo(
 
         return (
             <>
-                {toolInvocations.map(
-                    (toolInvocation: ToolInvocation, toolIndex: number) => (
-                        <div key={`tool-${toolIndex}`}>
-                            {renderToolInvocation(toolInvocation, toolIndex)}
-                        </div>
-                    )
-                )}
+                {toolInvocations.map((toolInvocation: ToolInvocation, toolIndex: number) => (
+                    <div key={`tool-${toolIndex}`}>{renderToolInvocation(toolInvocation, toolIndex)}</div>
+                ))}
             </>
         );
     },
     (prevProps, nextProps) => {
-        return prevProps.toolInvocations === nextProps.toolInvocations &&
-            prevProps.message === nextProps.message;
-    }
+        return prevProps.toolInvocations === nextProps.toolInvocations && prevProps.message === nextProps.message;
+    },
 );
 
 ToolInvocationListView.displayName = 'ToolInvocationListView';
@@ -3151,22 +3208,20 @@ ToolInvocationListView.displayName = 'ToolInvocationListView';
 const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [selectedIndex, setSelectedIndex] = React.useState(0);
-    const imageAttachments = attachments.filter(att => att.contentType?.startsWith('image/'));
-    
+    const imageAttachments = attachments.filter((att) => att.contentType?.startsWith('image/'));
+
     if (imageAttachments.length === 0) return null;
-    
+
     return (
         <>
             <div className="mt-2 flex flex-wrap gap-2">
                 {imageAttachments.map((attachment, i) => {
                     // Truncate filename to 15 characters
                     const fileName = attachment.name || `Image ${i + 1}`;
-                    const truncatedName = fileName.length > 15 
-                        ? fileName.substring(0, 12) + '...' 
-                        : fileName;
-                    
+                    const truncatedName = fileName.length > 15 ? fileName.substring(0, 12) + '...' : fileName;
+
                     return (
-                        <button 
+                        <button
                             key={i}
                             onClick={() => {
                                 setSelectedIndex(i);
@@ -3175,11 +3230,7 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                             className="flex items-center gap-1.5 max-w-xs rounded-full pl-1 pr-3 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                         >
                             <div className="h-6 w-6 rounded-full overflow-hidden flex-shrink-0">
-                                <img 
-                                    src={attachment.url} 
-                                    alt={fileName}
-                                    className="h-full w-full object-cover"
-                                />
+                                <img src={attachment.url} alt={fileName} className="h-full w-full object-cover" />
                             </div>
                             <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
                                 {truncatedName}
@@ -3188,7 +3239,7 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                     );
                 })}
             </div>
-            
+
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent className="p-0 bg-white dark:bg-neutral-900 sm:max-w-4xl">
                     <div className="flex flex-col h-full">
@@ -3199,35 +3250,50 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                     size="icon"
                                     onClick={() => {
                                         navigator.clipboard.writeText(imageAttachments[selectedIndex].url);
-                                        toast.success("Image URL copied to clipboard");
+                                        toast.success('Image URL copied to clipboard');
                                     }}
                                     className="h-8 w-8 rounded-md text-neutral-600 dark:text-neutral-400"
                                     title="Copy link"
                                 >
                                     <Copy className="h-4 w-4" />
                                 </Button>
-                                
-                                <a 
-                                    href={imageAttachments[selectedIndex].url} 
+
+                                <a
+                                    href={imageAttachments[selectedIndex].url}
                                     download={imageAttachments[selectedIndex].name}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center justify-center h-8 w-8 rounded-md text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
                                     title="Download"
                                 >
-                                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
-                                        <path d="M7.50005 1.04999C7.74858 1.04999 7.95005 1.25146 7.95005 1.49999V8.41359L10.1819 6.18179C10.3576 6.00605 10.6425 6.00605 10.8182 6.18179C10.994 6.35753 10.994 6.64245 10.8182 6.81819L7.81825 9.81819C7.64251 9.99392 7.35759 9.99392 7.18185 9.81819L4.18185 6.81819C4.00611 6.64245 4.00611 6.35753 4.18185 6.18179C4.35759 6.00605 4.64251 6.00605 4.81825 6.18179L7.05005 8.41359V1.49999C7.05005 1.25146 7.25152 1.04999 7.50005 1.04999ZM2.5 10C2.77614 10 3 10.2239 3 10.5V12C3 12.5539 3.44565 13 3.99635 13H11.0012C11.5529 13 12 12.5539 12 12V10.5C12 10.2239 12.2239 10 12.5 10C12.7761 10 13 10.2239 13 10.5V12C13 13.1046 12.1059 14 11.0012 14H3.99635C2.89019 14 2 13.1046 2 12V10.5C2 10.2239 2.22386 10 2.5 10Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                                    <svg
+                                        width="15"
+                                        height="15"
+                                        viewBox="0 0 15 15"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                    >
+                                        <path
+                                            d="M7.50005 1.04999C7.74858 1.04999 7.95005 1.25146 7.95005 1.49999V8.41359L10.1819 6.18179C10.3576 6.00605 10.6425 6.00605 10.8182 6.18179C10.994 6.35753 10.994 6.64245 10.8182 6.81819L7.81825 9.81819C7.64251 9.99392 7.35759 9.99392 7.18185 9.81819L4.18185 6.81819C4.00611 6.64245 4.00611 6.35753 4.18185 6.18179C4.35759 6.00605 4.64251 6.00605 4.81825 6.18179L7.05005 8.41359V1.49999C7.05005 1.25146 7.25152 1.04999 7.50005 1.04999ZM2.5 10C2.77614 10 3 10.2239 3 10.5V12C3 12.5539 3.44565 13 3.99635 13H11.0012C11.5529 13 12 12.5539 12 12V10.5C12 10.2239 12.2239 10 12.5 10C12.7761 10 13 10.2239 13 10.5V12C13 13.1046 12.1059 14 11.0012 14H3.99635C2.89019 14 2 13.1046 2 12V10.5C2 10.2239 2.22386 10 2.5 10Z"
+                                            fill="currentColor"
+                                            fillRule="evenodd"
+                                            clipRule="evenodd"
+                                        ></path>
                                     </svg>
                                 </a>
-                                
-                                <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 mr-8">
+
+                                <Badge
+                                    variant="secondary"
+                                    className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 mr-8"
+                                >
                                     {selectedIndex + 1} of {imageAttachments.length}
                                 </Badge>
                             </div>
-                            
-                            <div className="w-8"></div> {/* Spacer to balance the header and avoid overlap with close button */}
+                            <div className="w-8"></div>{' '}
+                            {/* Spacer to balance the header and avoid overlap with close button */}
                         </header>
-                        
+
                         <div className="flex-1 p-4 overflow-auto flex items-center justify-center">
                             <div className="relative max-w-full max-h-[60vh]">
                                 <img
@@ -3235,13 +3301,17 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                     alt={imageAttachments[selectedIndex].name || `Image ${selectedIndex + 1}`}
                                     className="max-w-full max-h-[60vh] object-contain rounded-md"
                                 />
-                                
+
                                 {imageAttachments.length > 1 && (
                                     <>
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            onClick={() => setSelectedIndex(prev => (prev === 0 ? imageAttachments.length - 1 : prev - 1))}
+                                            onClick={() =>
+                                                setSelectedIndex((prev) =>
+                                                    prev === 0 ? imageAttachments.length - 1 : prev - 1,
+                                                )
+                                            }
                                             className="absolute left-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-full bg-white/90 dark:bg-neutral-800/90 border border-neutral-200 dark:border-neutral-700 shadow-sm"
                                         >
                                             <ChevronLeft className="h-4 w-4" />
@@ -3249,7 +3319,11 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            onClick={() => setSelectedIndex(prev => (prev === imageAttachments.length - 1 ? 0 : prev + 1))}
+                                            onClick={() =>
+                                                setSelectedIndex((prev) =>
+                                                    prev === imageAttachments.length - 1 ? 0 : prev + 1,
+                                                )
+                                            }
                                             className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-full bg-white/90 dark:bg-neutral-800/90 border border-neutral-200 dark:border-neutral-700 shadow-sm"
                                         >
                                             <ChevronRight className="h-4 w-4" />
@@ -3258,7 +3332,7 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                 )}
                             </div>
                         </div>
-                        
+
                         {imageAttachments.length > 1 && (
                             <div className="border-t border-neutral-200 dark:border-neutral-800 p-3">
                                 <div className="flex items-center justify-center gap-2 overflow-x-auto py-1">
@@ -3267,13 +3341,13 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                             key={idx}
                                             onClick={() => setSelectedIndex(idx)}
                                             className={`relative h-12 w-12 rounded-md overflow-hidden flex-shrink-0 transition-all ${
-                                                selectedIndex === idx 
-                                                    ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                                                selectedIndex === idx
+                                                    ? 'ring-2 ring-primary ring-offset-2 ring-offset-background'
                                                     : 'opacity-70 hover:opacity-100'
                                             }`}
                                         >
-                                            <img 
-                                                src={attachment.url} 
+                                            <img
+                                                src={attachment.url}
                                                 alt={attachment.name || `Thumbnail ${idx + 1}`}
                                                 className="h-full w-full object-cover"
                                             />
@@ -3282,16 +3356,14 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                 </div>
                             </div>
                         )}
-                        
+
                         <footer className="border-t border-neutral-200 dark:border-neutral-800 p-3">
                             <div className="text-sm text-neutral-600 dark:text-neutral-400 flex items-center justify-between">
                                 <span className="truncate max-w-[80%]">
                                     {imageAttachments[selectedIndex].name || `Image ${selectedIndex + 1}`}
                                 </span>
                                 {imageAttachments[selectedIndex].size && (
-                                    <span>
-                                        {Math.round(imageAttachments[selectedIndex].size / 1024)} KB
-                                    </span>
+                                    <span>{Math.round(imageAttachments[selectedIndex].size / 1024)} KB</span>
                                 )}
                             </div>
                         </footer>
