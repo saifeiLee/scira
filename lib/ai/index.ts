@@ -1,9 +1,10 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { wrapLanguageModel } from 'ai';
-
+console.log('process.env.OPENAI_API_BASE:', process.env.OPENAI_API_BASE);
+console.log('process.env.OPENAI_API_KEY:', process.env.OPENAI_API_KEY);
 export const openai = createOpenAI({
-  baseURL: "https://test-llm.baijia.com/v1/",
-  apiKey: 'sk-P4Zn5hJ27nLIk4Tikv6ceQ',
+  baseURL: process.env.OPENAI_API_BASE,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export const customModel = (apiIdentifier: string) => {
