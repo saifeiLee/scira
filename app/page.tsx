@@ -636,7 +636,7 @@ const HomeContent = () => {
 
     const chatOptions: UseChatOptions = useMemo(
         () => ({
-            api: '/api/plan',
+            api: 'http://localhost:28688/ai/teach/frontend/api/plan/chat',
             experimental_throttle: 500,
             body: {
                 model: selectedModel,
@@ -2034,8 +2034,18 @@ const ToolInvocationListView = memo(
                 const result = 'result' in toolInvocation ? JSON.parse(JSON.stringify(toolInvocation.result)) : null;
                 console.log('toolInvocation.toolName:', toolInvocation.toolName);
                 if (toolInvocation.toolName === 'reason_thinking') {
-                    if (!result) {
+                    if (!result && !message?.annotations) {
+                        console.log('message.annotations:', message?.annotations);
                         return <SearchLoadingState icon={Heart} text="思考中..." color="blue" />;
+                    }
+                    if (message?.annotations) {
+                        const thinking = message.annotations.reduce((acc: any, curr: any) => {
+                            if (curr.type === "thinking_delta") {
+                                acc += curr.text;
+                            }
+                            return acc;
+                        }, "");
+                        return <ReasonThinking thinkingResult={thinking} />;
                     }
                     return <ReasonThinking thinkingResult={result.thinkingResult} />;
                 }
@@ -2066,16 +2076,21 @@ const ToolInvocationListView = memo(
                     console.log('subject: ', subject);
                     if (!result) {
                         return (
-                            <div>
+                            <div className="flex flex-col gap-2 border-b border-neutral-200 dark:border-neutral-800 p-4">
                                 <p>
-                                正在搜索<span className="font-bold">{province}</span>的<span className="font-bold">{grade}</span>
-                                年级的<span className="font-bold">{subject}</span>资料
-                            </p>
+                                    正在搜索<span className="font-bold">{province}</span>的
+                                    <span className="font-bold">{grade}</span>
+                                    年级的<span className="font-bold">{subject}</span>资料
+                                </p>
                                 <SearchLoadingState icon={Search} text="搜索中..." color="blue" />
                             </div>
                         );
                     }
-                    
+                    return (
+                        <div className="flex flex-col gap-2 border-b border-neutral-200 dark:border-neutral-800 p-4">
+                            <p>数据搜索完成✅</p>
+                        </div>
+                    );
                 }
 
                 if (toolInvocation.toolName === 'find_place') {

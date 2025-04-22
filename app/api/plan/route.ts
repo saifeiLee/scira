@@ -2,6 +2,7 @@ import { getGroupConfig } from '@/app/actions';
 import { createDataStreamResponse, streamText, convertToCoreMessages, tool, generateText } from 'ai';
 import { openai } from '@/lib/ai';
 import { z } from 'zod';
+import { GaokaoData } from './data';
 
 const ReasonThinkingToolPrompt = `
   ### Reason Thinking Tool
@@ -30,48 +31,55 @@ export async function POST(req: Request) {
         execute: async (dataStream) => {
             const lastMessage = messages[messages.length - 1];
             console.log('lastMessage: ', lastMessage);
+            const shouldThink = lastMessage.content != ''
+            let convertedMessages = convertToCoreMessages(messages)
 
-            // 思考过程
-            const thinkingToolResult = streamText({
-                model: openai('gpt-4o'),
-                messages: convertToCoreMessages(messages),
-                temperature: 0,
-                system: ReasonThinkingToolPrompt,
-                toolChoice: 'required',
-                tools: {
-                    reason_thinking: tool({
-                        description: 'Reason Thinking Tool',
-                        parameters: z.object({
-                            problem: z.string().describe('The problem encountered by the user'),
-                            emotions: z.string().describe('The emotions of the user'),
+            if (shouldThink) {
+                // 思考过程 (可以服务于学情深沟)
+                const thinkingToolResult = streamText({
+                    model: openai('gpt-4o'),
+                    messages: convertToCoreMessages(messages),
+                    temperature: 0,
+                    system: ReasonThinkingToolPrompt,
+                    toolChoice: 'required',
+                    tools: {
+                        reason_thinking: tool({
+                            description: 'Reason Thinking Tool',
+                            parameters: z.object({
+                                problem: z.string().describe('The problem encountered by the user'),
+                                emotions: z.string().describe('The emotions of the user'),
+                            }),
+                            execute: async ({ problem, emotions }) => {
+                                console.log('Problem: ', problem);
+                                console.log('Emotions: ', emotions);
+                                const { text: thinkingResult } = await generateText({
+                                    model: openai('gpt-4o'),
+                                    messages: convertToCoreMessages(messages),
+                                    system:
+                                        OutputThinkingPrompt +
+                                        '\n\n' +
+                                        `
+                                    Problem: ${problem}
+                                    Emotions: ${emotions}
+                                    `,
+                                    temperature: 1,
+                                });
+                                return {
+                                    thinkingResult,
+                                };
+                            },
                         }),
-                        execute: async ({ problem, emotions }) => {
-                            console.log('Problem: ', problem);
-                            console.log('Emotions: ', emotions);
-                            const { text: thinkingResult } = await generateText({
-                                model: openai('gpt-4o'),
-                                messages: convertToCoreMessages(messages),
-                                system:
-                                    OutputThinkingPrompt +
-                                    '\n\n' +
-                                    `
-                                Problem: ${problem}
-                                Emotions: ${emotions}
-                                `,
-                                temperature: 1,
-                            });
-                            return {
-                                thinkingResult,
-                            };
-                        },
-                    }),
-                },
-            });
-            thinkingToolResult.mergeIntoDataStream(dataStream);
+                    },
+                });
+                thinkingToolResult.mergeIntoDataStream(dataStream);
+                convertedMessages = [...convertedMessages, ...(await thinkingToolResult.response).messages]
+            }
+            
+
             // 工具调用
             const toolsResult = streamText({
                 model: openai('gpt-4o'),
-                messages: [...convertToCoreMessages(messages), ...(await thinkingToolResult.response).messages],
+                messages: convertedMessages,
                 temperature: 1,
                 toolChoice: 'auto',
                 system: systemPrompt,
@@ -97,11 +105,9 @@ export async function POST(req: Request) {
                             console.log('省份: ', province);
                             console.log('年级: ', grade);
                             console.log('科目: ', subject);
-                            const searchResult = `${province}过去3年的一本率为10%，二本率为20%，三本率为30%.
-                                其中${subject}的平均分是105分，满分是150分。`;
                             // 这里应该给出规划结果
                             return {
-                                result: searchResult,
+                                result: GaokaoData['北京'],
                             };
                         },
                     }),
@@ -121,7 +127,7 @@ export async function POST(req: Request) {
                     console.log('Steps[2] ', event.steps);
                     console.log('Messages[2]: ', event.response.messages);
                 },
-            })
+            });
             return response.mergeIntoDataStream(dataStream);
 
             // 制定计划

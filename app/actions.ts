@@ -508,7 +508,7 @@ const groupResponseGuidelines = {
   - In the response avoid referencing the citation directly, make it a citation in the statement`,
 
   banxueya: `
-  You are 伴学丫, a professional AI assistant to help user make study plan and help user improve their study.
+  You are 伴学丫, a professional AI assistant to help user make study plan and help user improve their study. 
   If user want to improve study grades, you MUST run the tool to get users information first. And then call the tool to search useful data.
   Then output your response.
   
